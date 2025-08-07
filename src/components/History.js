@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { supabase } from '../supabaseClient';
 import {
   Box,
   Card,
@@ -10,25 +11,22 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
+  CircularProgress,
+  Typography,
 } from '@mui/material';
 
-// --- Mock Data ---
-const createData = (id, name, target, actual, serviceDuration) => {
-  return { id, name, target, actual, serviceDuration };
-};
+async function fetchRecords() {
+  const { data, error } = await supabase
+    .from('calculations')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-const mockRows = [
-  createData(1, 'MacBook Pro 14', 2.50, 3.10, 80),
-  createData(2, 'iPhone 15 Pro', 1.80, 1.50, 120),
-  createData(3, 'Sony WH-1000XM5', 0.50, 0.75, 45),
-  createData(4, 'Kindle Paperwhite', 0.20, 0.15, 200),
-];
-// --------------------
-
-const fetchRecords = async () => {
-  console.log("Fetching records...");
-  return new Promise(resolve => setTimeout(() => resolve(mockRows), 500));
-};
+  if (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+  return data;
+}
 
 function stableSort(array, comparator) {
   const stabilizedThis = array.map((el, index) => [el, index]);
@@ -56,18 +54,30 @@ const headCells = [
   { id: 'name', numeric: false, label: '名称 (Name)' },
   { id: 'target', numeric: true, label: '目标 (Target)' },
   { id: 'actual', numeric: true, label: '实际 (Actual)' },
-  { id: 'serviceDuration', numeric: true, label: '服役 (Days)' },
+  { id: 'service_duration', numeric: true, label: '服役 (Days)' },
 ];
 
 const History = () => {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('name');
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchRecords().then(data => {
-      setRows(data);
-    });
+    setLoading(true);
+    fetchRecords()
+      .then(data => {
+        setRows(data);
+        setError(null);
+      })
+      .catch(err => {
+        setError(err.message);
+        setRows([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const handleRequestSort = (property) => {
@@ -106,14 +116,28 @@ const History = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedRows.map((row) => (
-              <TableRow hover key={row.id}>
-                <TableCell component="th" scope="row">{row.name}</TableCell>
-                <TableCell align="right">¥{row.target.toFixed(2)}</TableCell>
-                <TableCell align="right">¥{row.actual.toFixed(2)}</TableCell>
-                <TableCell align="right">{row.serviceDuration}</TableCell>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={headCells.length} align="center" sx={{ py: 4 }}>
+                  <CircularProgress />
+                </TableCell>
               </TableRow>
-            ))}
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={headCells.length} align="center" sx={{ py: 4 }}>
+                  <Typography color="error">Failed to load data: {error}</Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              sortedRows.map((row) => (
+                <TableRow hover key={row.id}>
+                  <TableCell component="th" scope="row">{row.name}</TableCell>
+                  <TableCell align="right">¥{Number(row.target).toFixed(2)}</TableCell>
+                  <TableCell align="right">¥{Number(row.actual).toFixed(2)}</TableCell>
+                  <TableCell align="right">{row.service_duration}</TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
