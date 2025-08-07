@@ -16,7 +16,7 @@ import { createAppTheme } from './theme';
 import Calculator from './components/Calculator';
 import History from './components/History';
 import Account from './components/Account';
-import AuthComponent from './components/Auth';
+
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // 创建主题上下文
@@ -37,7 +37,7 @@ export const useTheme = () => {
 function MainApp() {
   const [value, setValue] = useState(0);
   const [themeMode, setThemeMode] = useState('dark');
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
   const toggleTheme = () => {
     setThemeMode(prevMode => prevMode === 'dark' ? 'light' : 'dark');
@@ -65,15 +65,7 @@ function MainApp() {
     );
   }
 
-  // 如果用户未登录，显示登录界面
-  if (!user) {
-    return (
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <AuthComponent />
-      </ThemeProvider>
-    );
-  }
+  // 不管用户是否登录，都显示主应用界面
 
   const renderContent = () => {
     switch (value) {
@@ -134,9 +126,9 @@ function MainApp() {
               },
             }}
           >
-            <BottomNavigationAction label="计算器" icon={<CalculateIcon />} />
-            <BottomNavigationAction label="历史记录" icon={<HistoryIcon />} />
-            <BottomNavigationAction label="设置" icon={<AccountCircleIcon />} />
+            <BottomNavigationAction label="计算" icon={<CalculateIcon />} />
+            <BottomNavigationAction label="购物分析" icon={<HistoryIcon />} />
+            <BottomNavigationAction label="我的" icon={<AccountCircleIcon />} />
           </BottomNavigation>
         </AppBar>
       </Box>

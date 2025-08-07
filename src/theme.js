@@ -49,14 +49,112 @@ export const createAppTheme = (mode) => createTheme({
       ? '"SF Pro Display", "Inter", "Roboto", "Helvetica", "Arial", sans-serif'
       : '"SF Pro Text", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
-      fontSize: '2.5rem',
-      fontWeight: 700,
+      fontSize: 'clamp(3rem, 8vw, 6rem)',
+      fontWeight: 900,
       letterSpacing: '-0.02em',
       background: mode === 'dark'
         ? 'linear-gradient(45deg, #6366f1, #ec4899)'
         : 'linear-gradient(45deg, #007AFF, #FF3B30)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
+      position: 'relative',
+      display: 'inline-block',
+      animation: 'glitch 2s infinite',
+      '&::before, &::after': {
+        content: 'attr(data-text)',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        background: mode === 'dark'
+          ? 'linear-gradient(45deg, #6366f1, #ec4899)'
+          : 'linear-gradient(45deg, #007AFF, #FF3B30)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+      },
+      '&::before': {
+        animation: 'glitch-1 0.5s infinite',
+        clipPath: 'polygon(0 0, 100% 0, 100% 45%, 0 45%)',
+        transform: 'translate(-2px, -2px)',
+        opacity: 0.8,
+      },
+      '&::after': {
+        animation: 'glitch-2 0.5s infinite',
+        clipPath: 'polygon(0 55%, 100% 55%, 100% 100%, 0 100%)',
+        transform: 'translate(2px, 2px)',
+        opacity: 0.8,
+      },
+      '&:hover': {
+        animation: 'glitch 0.3s infinite',
+        '&::before': {
+          animation: 'glitch-1 0.2s infinite',
+        },
+        '&::after': {
+          animation: 'glitch-2 0.2s infinite',
+        },
+      },
+      '@keyframes glitch': {
+        '0%, 100%': {
+          transform: 'translate(0)',
+        },
+        '20%': {
+          transform: 'translate(-2px, 2px)',
+        },
+        '40%': {
+          transform: 'translate(-2px, -2px)',
+        },
+        '60%': {
+          transform: 'translate(2px, 2px)',
+        },
+        '80%': {
+          transform: 'translate(2px, -2px)',
+        },
+      },
+      '@keyframes glitch-1': {
+        '0%, 100%': {
+          transform: 'translate(0)',
+          filter: 'hue-rotate(0deg)',
+        },
+        '20%': {
+          transform: 'translate(-2px, 2px)',
+          filter: 'hue-rotate(90deg)',
+        },
+        '40%': {
+          transform: 'translate(-2px, -2px)',
+          filter: 'hue-rotate(180deg)',
+        },
+        '60%': {
+          transform: 'translate(2px, 2px)',
+          filter: 'hue-rotate(270deg)',
+        },
+        '80%': {
+          transform: 'translate(2px, -2px)',
+          filter: 'hue-rotate(360deg)',
+        },
+      },
+      '@keyframes glitch-2': {
+        '0%, 100%': {
+          transform: 'translate(0)',
+          filter: 'hue-rotate(0deg)',
+        },
+        '20%': {
+          transform: 'translate(2px, -2px)',
+          filter: 'hue-rotate(45deg)',
+        },
+        '40%': {
+          transform: 'translate(2px, 2px)',
+          filter: 'hue-rotate(135deg)',
+        },
+        '60%': {
+          transform: 'translate(-2px, -2px)',
+          filter: 'hue-rotate(225deg)',
+        },
+        '80%': {
+          transform: 'translate(-2px, 2px)',
+          filter: 'hue-rotate(315deg)',
+        },
+      },
     },
     h2: {
       fontSize: '2rem',

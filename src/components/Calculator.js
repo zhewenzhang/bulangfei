@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
+import AuthComponent from './Auth';
+import { Dialog, DialogContent } from '@mui/material';
 import {
   Box,
   Button,
@@ -33,7 +35,10 @@ const Calculator = () => {
 
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
+  const resultsRef = useRef(null);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -44,7 +49,7 @@ const Calculator = () => {
     setNotification({ ...notification, open: false });
   };
 
-  const handleCalculate = async () => {
+  const handleCalculate = () => {
     setLoading(true);
     const { name, purchasePrice, targetDailyCost, purchaseDate, status, soldPrice } = formState;
     const price = parseFloat(purchasePrice);
@@ -52,7 +57,7 @@ const Calculator = () => {
     const sold = status === 'Sold' ? parseFloat(soldPrice) || 0 : 0;
 
     if (isNaN(price) || isNaN(target) || !purchaseDate) {
-      setNotification({ open: true, message: 'Please fill in all required fields with valid numbers.', severity: 'error' });
+      setNotification({ open: true, message: '请填写所有必填字段并确保数字有效。', severity: 'error' });
       setLoading(false);
       return;
     }
@@ -75,12 +80,36 @@ const Calculator = () => {
 
     const calculatedResults = { name, daysInService, actualDailyCost: actualDailyCost.toFixed(2), targetDailyCost: target.toFixed(2), overUnder: (actualDailyCost - target).toFixed(2), daysToMeetTarget };
     setResults(calculatedResults);
+    setLoading(false);
+    
+    // 自动滚动到结果区域
+    setTimeout(() => {
+      if (resultsRef.current) {
+        resultsRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+    }, 100);
+  };
 
+  const handleSaveAndAnalyze = async () => {
+    if (!user) {
+      setShowLoginDialog(true);
+      return;
+    }
+
+    if (!results) {
+      setNotification({ open: true, message: '请先进行计算再保存。', severity: 'warning' });
+      return;
+    }
+
+    setSaving(true);
     const recordToSave = { 
-      name, 
-      target: target.toFixed(2), 
-      actual: actualDailyCost.toFixed(2), 
-      service_duration: daysInService,
+      name: results.name, 
+      target: results.targetDailyCost, 
+      actual: results.actualDailyCost, 
+      service_duration: results.daysInService,
       user_id: user.id
     };
 
@@ -88,11 +117,11 @@ const Calculator = () => {
 
     if (error) {
       console.error('Error inserting data:', error);
-      setNotification({ open: true, message: `Error saving data: ${error.message}`, severity: 'error' });
+      setNotification({ open: true, message: `保存数据时出错: ${error.message}`, severity: 'error' });
     } else {
-      setNotification({ open: true, message: 'Calculation saved successfully!', severity: 'success' });
+      setNotification({ open: true, message: '计算结果保存成功！', severity: 'success' });
     }
-    setLoading(false);
+    setSaving(false);
   };
 
   return (
@@ -140,13 +169,11 @@ const Calculator = () => {
                 fullWidth 
                 type="number" 
                 variant="filled" 
-                label="入手价格" 
+                label="¥入手价格" 
                 name="purchasePrice" 
                 value={formState.purchasePrice} 
                 onChange={handleChange}
-                InputProps={{
-                  startAdornment: <Typography sx={{ mr: 1, color: 'text.secondary' }}>¥</Typography>
-                }}
+                sx={{ '& .MuiInputLabel-root': { fontSize: '1.1rem' } }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -154,13 +181,11 @@ const Calculator = () => {
                 fullWidth 
                 type="number" 
                 variant="filled" 
-                label="目标日耗" 
+                label="¥目标日耗" 
                 name="targetDailyCost" 
                 value={formState.targetDailyCost} 
                 onChange={handleChange}
-                InputProps={{
-                  startAdornment: <Typography sx={{ mr: 1, color: 'text.secondary' }}>¥</Typography>
-                }}
+                sx={{ '& .MuiInputLabel-root': { fontSize: '1.1rem' } }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -192,20 +217,17 @@ const Calculator = () => {
                     fullWidth 
                     type="number" 
                     variant="filled" 
-                    label="出售价格" 
+                    label="¥出售价格" 
                     name="soldPrice" 
                     value={formState.soldPrice} 
                     onChange={handleChange}
-                    InputProps={{
-                      startAdornment: <Typography sx={{ mr: 1, color: 'text.secondary' }}>¥</Typography>
-                    }}
                   />
                 </Grow>
               </Grid>
             )}
             <Grid item xs={12} sx={{ mt: 2 }}>
               <Button 
-                fullWidth 
+                fullWidth
                 variant="contained" 
                 color="primary" 
                 size="large" 
@@ -227,7 +249,7 @@ const Calculator = () => {
                     <Typography>计算中...</Typography>
                   </Box>
                 ) : (
-                  '开始计算并保存'
+                  '计算'
                 )}
               </Button>
             </Grid>
@@ -236,11 +258,14 @@ const Calculator = () => {
       </Card>
 
       <Grow in={results !== null}>
-        <Card sx={{ 
-          mt: 4,
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1))',
-          border: '2px solid rgba(99, 102, 241, 0.3)',
-        }}>
+        <Card 
+          ref={resultsRef}
+          sx={{ 
+            mt: 4,
+            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1))',
+            border: '2px solid rgba(99, 102, 241, 0.3)',
+          }}
+        >
           <CardHeader 
             title={
               <Typography variant="h5" sx={{ 
@@ -370,6 +395,36 @@ const Calculator = () => {
                     }
                   </Typography>
                 </Card>
+                
+                {/* 保存并分析按钮 */}
+                <Box sx={{ mt: 3, textAlign: 'center' }}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    size="large"
+                    onClick={handleSaveAndAnalyze}
+                    disabled={saving || !results}
+                    sx={{ 
+                      px: 4,
+                      py: 2,
+                      fontSize: '1.2rem',
+                      fontWeight: 600,
+                      background: 'linear-gradient(45deg, #ec4899, #8b5cf6)',
+                      '&:hover': {
+                        background: 'linear-gradient(45deg, #db2777, #7c3aed)',
+                      }
+                    }}
+                  >
+                    {saving ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <CircularProgress size={24} color="inherit" />
+                        <Typography>保存中...</Typography>
+                      </Box>
+                    ) : (
+                      '保存并分析'
+                    )}
+                  </Button>
+                </Box>
               </Box>
             )}
           </CardContent>
@@ -381,8 +436,20 @@ const Calculator = () => {
           {notification.message}
         </Alert>
       </Snackbar>
-    </Box>
-  );
-};
 
-export default Calculator;
+        {/* 登录对话框 */}
+        <Dialog 
+          open={showLoginDialog} 
+          onClose={() => setShowLoginDialog(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogContent sx={{ p: 0 }}>
+             <AuthComponent onClose={() => setShowLoginDialog(false)} isDialog={true} />
+           </DialogContent>
+        </Dialog>
+      </Box>
+    );
+  };
+
+  export default Calculator;

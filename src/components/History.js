@@ -14,7 +14,11 @@ import {
   TableSortLabel,
   CircularProgress,
   Typography,
+  Button,
+  Dialog,
+  DialogContent,
 } from '@mui/material';
+import Auth from './Auth';
 
 async function fetchRecords(userId) {
   const { data, error } = await supabase
@@ -66,9 +70,15 @@ const History = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      setRows([]);
+      setError(null);
+      return;
+    }
     
     setLoading(true);
     fetchRecords(user.id)
@@ -219,6 +229,28 @@ const History = () => {
                     </Box>
                   </TableCell>
                 </TableRow>
+              ) : !user ? (
+                <TableRow>
+                  <TableCell colSpan={headCells.length + 1} align="center" sx={{ py: 6 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="h6" color="primary.main" sx={{ fontFamily: 'system-ui, -apple-system, sans-serif', mb: 2 }}>请先登录账户</Typography>
+                      <Typography color="text.secondary" sx={{ fontFamily: 'system-ui, -apple-system, sans-serif', mb: 3 }}>登录后即可查看购物分析记录</Typography>
+                      <Button 
+                        variant="contained" 
+                        color="primary"
+                        onClick={() => setLoginDialogOpen(true)}
+                        sx={{
+                          background: 'linear-gradient(45deg, #667eea 0%, #764ba2 100%)',
+                          '&:hover': {
+                            background: 'linear-gradient(45deg, #5a6fd8 0%, #6a4190 100%)'
+                          }
+                        }}
+                      >
+                        立即登录
+                      </Button>
+                    </Box>
+                  </TableCell>
+                </TableRow>
               ) : rows.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={headCells.length + 1} align="center" sx={{ py: 6 }}>
@@ -316,6 +348,59 @@ const History = () => {
           </Table>
         </TableContainer>
       </Card>
+      
+      <Dialog 
+         open={loginDialogOpen} 
+         onClose={() => setLoginDialogOpen(false)}
+         maxWidth="sm"
+         fullWidth
+         sx={{
+           '& .MuiDialog-container': {
+             alignItems: 'flex-end',
+           },
+           '& .MuiDialog-paper': {
+             margin: 0,
+             borderRadius: '20px 20px 0 0',
+             maxHeight: '85vh',
+             width: '100%',
+             background: 'rgba(255, 255, 255, 0.98)',
+             backdropFilter: 'blur(20px)',
+             boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.2)',
+             animation: 'slideUp 0.3s ease-out',
+             '@keyframes slideUp': {
+               from: {
+                 transform: 'translateY(100%)',
+                 opacity: 0,
+               },
+               to: {
+                 transform: 'translateY(0)',
+                 opacity: 1,
+               },
+             },
+           },
+         }}
+         TransitionProps={{
+           timeout: 300,
+         }}
+       >
+         <DialogContent 
+           sx={{ 
+             p: 0,
+             '&::-webkit-scrollbar': {
+               width: '6px',
+             },
+             '&::-webkit-scrollbar-track': {
+               background: 'transparent',
+             },
+             '&::-webkit-scrollbar-thumb': {
+               background: 'rgba(0, 0, 0, 0.2)',
+               borderRadius: '3px',
+             },
+           }}
+         >
+           <Auth onClose={() => setLoginDialogOpen(false)} isDialog={true} />
+         </DialogContent>
+       </Dialog>
     </Box>
   );
 };
