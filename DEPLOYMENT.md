@@ -54,9 +54,21 @@ cp Dockerfile.simple Dockerfile
 ### 部署平台特定设置
 
 #### Zeabur
-- 构建命令: `npm run build`
-- 启动命令: `serve -s build -l $PORT`
-- 端口: 自动检测
+**推薦配置**:
+- 使用 `Dockerfile.zeabur` (如果主 Dockerfile 有問題)
+- 環境變量:
+  - `REACT_APP_SUPABASE_URL`: 你的 Supabase 項目 URL
+  - `REACT_APP_SUPABASE_ANON_KEY`: 你的 Supabase 匿名密鑰
+- 端口: 自動檢測 ($PORT)
+
+**故障排除**:
+1. 如果無法打開頁面，檢查構建日誌是否有錯誤
+2. 確保環境變量已正確設置
+3. 嘗試使用 `Dockerfile.zeabur` 替代主 Dockerfile:
+   ```bash
+   cp Dockerfile.zeabur Dockerfile
+   ```
+4. 檢查 Zeabur 控制台中的服務狀態和日誌
 
 #### Vercel
 - 框架预设: Create React App
