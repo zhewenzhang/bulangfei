@@ -51,6 +51,19 @@ cp Dockerfile.simple Dockerfile
 - `REACT_APP_SUPABASE_URL`
 - `REACT_APP_SUPABASE_ANON_KEY`
 
+### Google OAuth 配置
+**重要**: 部署後必須在 Supabase Dashboard 中配置重定向 URL
+
+1. 登錄 [Supabase Dashboard](https://supabase.com/dashboard)
+2. 選擇你的項目
+3. 進入 **Authentication** > **URL Configuration**
+4. 在 **Redirect URLs** 中添加以下 URL：
+   - 本地開發: `http://localhost:3000`
+   - Zeabur 部署: `https://a2a.zeabur.app`
+   - 其他部署平台: 添加對應的域名
+
+**注意**: 如果沒有正確配置重定向 URL，Google 登錄後會跳轉到錯誤的頁面或顯示錯誤。
+
 ### 部署平台特定设置
 
 #### Zeabur
