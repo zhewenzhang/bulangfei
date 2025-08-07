@@ -7,7 +7,18 @@
 **解决方案**: 项目已包含修复的 `Dockerfile`，使用 `serve` 替代 nginx 来避免权限问题。
 
 ### 问题 2: Tailwind CSS CDN 警告
+## 部署问题修复
+
+### 问题1: 502 Bad Gateway
+**原因**: Dockerfile中端口配置不正确，没有使用Zeabur的动态端口
+**解决方案**: 
+- 修改Dockerfile使用环境变量 `${PORT:-3000}`
+- 更新zeabur.json使用动态端口 `"${PORT}"`
+
+### 问题2: Tailwind CSS生产环境警告
 **错误信息**: `cdn.tailwindcss.com should not be used in production`
+**原因**: 项目中可能存在CDN版本的Tailwind CSS引用
+**解决方案**: 移除了不必要的Tailwind CSS依赖，项目使用Material-UI作为UI框架
 **解决方案**: 
 1. 如果项目使用了 Tailwind，安装本地版本：
    ```bash

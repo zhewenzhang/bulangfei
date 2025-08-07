@@ -26,4 +26,4 @@ RUN npm install -g serve
 EXPOSE 3000
 
 # 启动应用
-CMD ["serve", "-s", "build", "-l", "3000"]
+CMD ["sh", "-c", "serve -s build -l ${PORT:-3000}"]
