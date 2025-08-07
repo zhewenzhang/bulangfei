@@ -103,12 +103,12 @@ const History = () => {
     return 'error.main';
   };
 
-  const getPerformanceIcon = (actual, target) => {
-    const ratio = actual / target;
-    if (ratio <= 1) return '🎉';
-    if (ratio <= 1.5) return '⚠️';
-    return '❌';
-  };
+  // const getPerformanceIcon = (actual, target) => {
+  //   const ratio = actual / target;
+  //   if (ratio <= 1) return '🎉';
+  //   if (ratio <= 1.5) return '⚠️';
+  //   return '❌';
+  // };
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
