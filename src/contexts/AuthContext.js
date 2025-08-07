@@ -16,20 +16,36 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 获取当前用户会话
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+    // 处理 OAuth 回调 URL
+    const handleAuthCallback = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (data?.session) {
+        setUser(data.session.user);
+        // 清理 URL 中的认证参数
+        if (window.location.hash.includes('access_token')) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } else if (error) {
+        console.error('Auth error:', error);
+      }
+      
       setLoading(false);
     };
 
-    getSession();
+    handleAuthCallback();
 
     // 监听认证状态变化
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // 如果是登录成功，清理 URL
+        if (event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
       }
     );
 

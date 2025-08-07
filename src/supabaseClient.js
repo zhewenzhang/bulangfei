@@ -9,4 +9,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Supabase URL or Anon Key is missing. Make sure it's set in your .env.local file and prefixed with REACT_APP_");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    redirectTo: window.location.origin,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+});
