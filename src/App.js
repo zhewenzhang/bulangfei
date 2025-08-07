@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Box, Paper, BottomNavigation, BottomNavigationAction } from '@mui/material';
+import { ThemeProvider, CssBaseline, Box, Container, AppBar, Toolbar, Typography, BottomNavigation, BottomNavigationAction } from '@mui/material';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import HistoryIcon from '@mui/icons-material/History';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import './App.css';
+import theme from './theme';
 import Calculator from './components/Calculator';
 import History from './components/History';
 
 // Placeholder for the Account view
-const Account = () => <Box sx={{ p: 3, mb: 7 }}><h1>Account</h1></Box>;
+const Account = () => <Box sx={{ p: 3 }}><Typography variant="h4">Account</Typography></Box>;
 
 function App() {
   const [value, setValue] = useState(0);
@@ -27,24 +27,36 @@ function App() {
   };
 
   return (
-    <Box className="App">
-      <Box className="content-area">
-        {renderContent()}
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <AppBar position="static">
+          <Toolbar>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              Residual Value Calculator
+            </Typography>
+          </Toolbar>
+        </AppBar>
+
+        <Container component="main" sx={{ flexGrow: 1, py: 3 }}>
+          {renderContent()}
+        </Container>
+
+        <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0 }}>
+          <BottomNavigation
+            showLabels
+            value={value}
+            onChange={(event, newValue) => {
+              setValue(newValue);
+            }}
+          >
+            <BottomNavigationAction label="Calculator" icon={<CalculateIcon />} />
+            <BottomNavigationAction label="History" icon={<HistoryIcon />} />
+            <BottomNavigationAction label="Account" icon={<AccountCircleIcon />} />
+          </BottomNavigation>
+        </AppBar>
       </Box>
-      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000 }} elevation={3}>
-        <BottomNavigation
-          showLabels
-          value={value}
-          onChange={(event, newValue) => {
-            setValue(newValue);
-          }}
-        >
-          <BottomNavigationAction label="Calculator" icon={<CalculateIcon />} />
-          <BottomNavigationAction label="History" icon={<HistoryIcon />} />
-          <BottomNavigationAction label="Account" icon={<AccountCircleIcon />} />
-        </BottomNavigation>
-      </Paper>
-    </Box>
+    </ThemeProvider>
   );
 }
 
