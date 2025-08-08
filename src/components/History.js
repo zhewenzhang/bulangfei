@@ -17,6 +17,8 @@ import {
   Button,
   Dialog,
   DialogContent,
+  Grid,
+  Paper,
 } from '@mui/material';
 import Auth from './Auth';
 
@@ -71,6 +73,18 @@ const History = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  const handleRowClick = (row) => {
+    setSelectedRow(row);
+    setDetailDialogOpen(true);
+  };
+
+  const handleDetailClose = () => {
+    setDetailDialogOpen(false);
+    setSelectedRow(null);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -150,6 +164,99 @@ const History = () => {
             </Typography>
           }
         />
+        
+        {/* 统计指标卡片 */}
+        {rows.length > 0 && (
+          <Box sx={{ p: 3, pt: 0 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={4}>
+                <Paper sx={{
+                  p: 3,
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))',
+                  border: '1px solid rgba(34, 197, 94, 0.2)',
+                  borderRadius: 2
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    color: 'success.main',
+                    fontWeight: 600,
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    mb: 1
+                  }}>
+                    累计消费
+                  </Typography>
+                  <Typography variant="h4" sx={{
+                    color: 'success.main',
+                    fontWeight: 700,
+                    fontFamily: 'system-ui, -apple-system, sans-serif'
+                  }}>
+                    ¥{rows.reduce((sum, row) => sum + (Number(row.actual) * Number(row.service_duration)), 0).toFixed(2)}
+                  </Typography>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12} sm={4}>
+                <Paper sx={{
+                  p: 3,
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))',
+                  border: '1px solid rgba(59, 130, 246, 0.2)',
+                  borderRadius: 2
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    color: 'primary.main',
+                    fontWeight: 600,
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    mb: 1
+                  }}>
+                    已达成数量
+                  </Typography>
+                  <Typography variant="h4" sx={{
+                    color: 'primary.main',
+                    fontWeight: 700,
+                    fontFamily: 'system-ui, -apple-system, sans-serif'
+                  }}>
+                    {rows.filter(row => Number(row.actual) <= Number(row.target)).length} / {rows.length}
+                  </Typography>
+                </Paper>
+              </Grid>
+              
+              <Grid item xs={12} sm={4}>
+                <Paper sx={{
+                  p: 3,
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))',
+                  border: '1px solid rgba(245, 158, 11, 0.2)',
+                  borderRadius: 2
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    color: 'warning.main',
+                    fontWeight: 600,
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    mb: 1
+                  }}>
+                    预计达成
+                  </Typography>
+                  <Typography variant="h4" sx={{
+                    color: 'warning.main',
+                    fontWeight: 700,
+                    fontFamily: 'system-ui, -apple-system, sans-serif'
+                  }}>
+                    {(() => {
+                      const unachievedItems = rows.filter(row => Number(row.actual) > Number(row.target));
+                      if (unachievedItems.length === 0) return '全部达成';
+                      const avgDaysNeeded = unachievedItems.reduce((sum, row) => {
+                        const ratio = Number(row.actual) / Number(row.target);
+                        return sum + Math.ceil((ratio - 1) * Number(row.service_duration));
+                      }, 0) / unachievedItems.length;
+                      return `${Math.ceil(avgDaysNeeded)}天`;
+                    })()} 
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Box>
+        )}
         <TableContainer sx={{ 
           background: 'rgba(30, 30, 46, 0.3)',
           backdropFilter: 'blur(10px)',
@@ -164,25 +271,26 @@ const History = () => {
                 '& .MuiTableCell-root': { 
                   background: 'linear-gradient(45deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2))',
                   fontWeight: 700,
-                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
-                  py: 2,
+                  fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                  py: { xs: 1, sm: 1.5, md: 2 },
                   fontFamily: 'system-ui, -apple-system, sans-serif',
                   whiteSpace: 'nowrap'
                 } 
               }}>
                 {headCells.map((headCell, index) => {
-                  const widths = ['30%', '18%', '18%', '18%'];
+                  const widths = ['20%', '22%', '22%', '20%'];
                   return (
                     <TableCell
                       key={headCell.id}
-                      align={headCell.numeric ? 'right' : 'left'}
+                      align="center"
                       sortDirection={orderBy === headCell.id ? order : false}
                       sx={{ 
                         cursor: 'pointer',
                         '&:hover': {
                           background: 'rgba(99, 102, 241, 0.3) !important'
                         },
-                        width: widths[index]
+                        width: widths[index],
+                        padding: { xs: '8px 4px', sm: '12px 8px', md: '16px 12px' }
                       }}
                     >
                       <TableSortLabel
@@ -192,7 +300,10 @@ const History = () => {
                         sx={{
                           '& .MuiTableSortLabel-icon': {
                             color: 'primary.main !important'
-                          }
+                          },
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center'
                         }}
                       >
                         {headCell.label}
@@ -202,11 +313,12 @@ const History = () => {
                 })}
                 <TableCell align="center" sx={{ 
                   fontWeight: 700, 
-                  fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
+                  fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                   fontFamily: 'system-ui, -apple-system, sans-serif',
-                  width: '16%'
+                  width: '16%',
+                  padding: { xs: '8px 4px', sm: '12px 8px', md: '16px 12px' }
                 }}>
-                  性能表现
+                  是否达成
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -270,7 +382,9 @@ const History = () => {
                     <TableRow 
                       hover 
                       key={row.id}
+                      onClick={() => handleRowClick(row)}
                       sx={{
+                        cursor: 'pointer',
                         '&:hover': {
                           background: 'rgba(99, 102, 241, 0.1)',
                           transform: 'scale(1.01)',
@@ -283,44 +397,52 @@ const History = () => {
                     >
                       <TableCell component="th" scope="row" sx={{ 
                         fontWeight: 600,
-                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                         color: 'primary.main',
                         fontFamily: 'system-ui, -apple-system, sans-serif',
-                        width: '30%',
+                        width: '20%',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
+                        whiteSpace: 'nowrap',
+                        padding: { xs: '8px 4px', sm: '12px 8px', md: '16px 12px' },
+                        maxWidth: 0
                       }}>
                         {row.name}
                       </TableCell>
                       <TableCell align="right" sx={{ 
                         fontWeight: 600,
-                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                         color: 'warning.main',
                         fontFamily: 'system-ui, -apple-system, sans-serif',
-                        width: '18%'
+                        width: '22%',
+                        padding: { xs: '8px 4px', sm: '12px 8px', md: '16px 12px' }
                       }}>
                         ¥{target.toFixed(2)}
                       </TableCell>
                       <TableCell align="right" sx={{ 
                         fontWeight: 600,
-                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                         color: performanceColor,
                         fontFamily: 'system-ui, -apple-system, sans-serif',
-                        width: '18%'
+                        width: '22%',
+                        padding: { xs: '8px 4px', sm: '12px 8px', md: '16px 12px' }
                       }}>
                         ¥{actual.toFixed(2)}
                       </TableCell>
                       <TableCell align="right" sx={{ 
                         fontWeight: 600,
-                        fontSize: { xs: '0.875rem', sm: '1rem', md: '1.1rem' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                         color: 'success.main',
                         fontFamily: 'system-ui, -apple-system, sans-serif',
-                        width: '18%'
+                        width: '20%',
+                        padding: { xs: '8px 4px', sm: '12px 8px', md: '16px 12px' }
                       }}>
                         {row.service_duration} 天
                       </TableCell>
-                      <TableCell align="center" sx={{ width: '16%' }}>
+                      <TableCell align="center" sx={{ 
+                        width: '16%',
+                        padding: { xs: '8px 4px', sm: '12px 8px', md: '16px 12px' }
+                      }}>
                         <Box sx={{ 
                           display: 'flex', 
                           alignItems: 'center', 
@@ -333,10 +455,19 @@ const History = () => {
                           <Typography sx={{ 
                             fontWeight: 600,
                             color: performanceColor,
-                            fontSize: { xs: '0.75rem', sm: '0.875rem', md: '0.9rem' },
+                            fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                             fontFamily: 'system-ui, -apple-system, sans-serif'
                           }}>
-                            {((actual / target) * 100).toFixed(0)}%
+                            {(() => {
+                              const ratio = actual / target;
+                              if (ratio <= 1) {
+                                return '已达成';
+                              } else {
+                                // 计算还需要多少天才能达成目标
+                                const daysNeeded = Math.ceil((actual - target) / target * row.service_duration);
+                                return `${daysNeeded}天后达成`;
+                              }
+                            })()}
                           </Typography>
                         </Box>
                       </TableCell>
@@ -399,6 +530,284 @@ const History = () => {
            }}
          >
            <Auth onClose={() => setLoginDialogOpen(false)} isDialog={true} />
+         </DialogContent>
+       </Dialog>
+       
+       {/* 详情弹窗 */}
+       <Dialog 
+         open={detailDialogOpen} 
+         onClose={handleDetailClose}
+         maxWidth="sm"
+         fullWidth
+         sx={{
+           '& .MuiDialog-container': {
+             alignItems: 'flex-end',
+           },
+           '& .MuiDialog-paper': {
+             margin: 0,
+             borderRadius: '20px 20px 0 0',
+             maxHeight: '70vh',
+             width: '100%',
+             background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05))',
+             backdropFilter: 'blur(20px)',
+             boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.2)',
+             border: '1px solid rgba(99, 102, 241, 0.2)',
+             animation: 'slideUp 0.3s ease-out',
+             '@keyframes slideUp': {
+               from: {
+                 transform: 'translateY(100%)',
+                 opacity: 0,
+               },
+               to: {
+                 transform: 'translateY(0)',
+                 opacity: 1,
+               },
+             },
+           },
+         }}
+         TransitionProps={{
+           timeout: 300,
+         }}
+       >
+         <DialogContent sx={{ p: 0 }}>
+           {selectedRow && (
+             <Box sx={{ p: 4 }}>
+               {/* 标题区域 */}
+               <Box sx={{ 
+                 textAlign: 'center', 
+                 mb: 4,
+                 pb: 3,
+                 borderBottom: '1px solid rgba(99, 102, 241, 0.2)'
+               }}>
+                 <Typography variant="h4" sx={{
+                   background: 'linear-gradient(45deg, #6366f1, #ec4899)',
+                   WebkitBackgroundClip: 'text',
+                   WebkitTextFillColor: 'transparent',
+                   fontWeight: 700,
+                   fontFamily: 'system-ui, -apple-system, sans-serif',
+                   mb: 1
+                 }}>
+                   {selectedRow.name}
+                 </Typography>
+                 <Typography variant="subtitle1" sx={{
+                   color: 'text.secondary',
+                   fontFamily: 'system-ui, -apple-system, sans-serif'
+                 }}>
+                   物品详情信息
+                 </Typography>
+               </Box>
+               
+               {/* 详情信息网格 */}
+               <Grid container spacing={3}>
+                 <Grid item xs={12} sm={6}>
+                   <Paper sx={{
+                     p: 3,
+                     background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))',
+                     border: '1px solid rgba(34, 197, 94, 0.2)',
+                     borderRadius: 2
+                   }}>
+                     <Typography variant="h6" sx={{
+                       color: 'success.main',
+                       fontWeight: 600,
+                       fontFamily: 'system-ui, -apple-system, sans-serif',
+                       mb: 1
+                     }}>
+                       目标日耗
+                     </Typography>
+                     <Typography variant="h4" sx={{
+                       color: 'success.main',
+                       fontWeight: 700,
+                       fontFamily: 'system-ui, -apple-system, sans-serif'
+                     }}>
+                       ¥{Number(selectedRow.target).toFixed(2)}
+                     </Typography>
+                   </Paper>
+                 </Grid>
+                 
+                 <Grid item xs={12} sm={6}>
+                   <Paper sx={{
+                     p: 3,
+                     background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))',
+                     border: '1px solid rgba(59, 130, 246, 0.2)',
+                     borderRadius: 2
+                   }}>
+                     <Typography variant="h6" sx={{
+                       color: 'primary.main',
+                       fontWeight: 600,
+                       fontFamily: 'system-ui, -apple-system, sans-serif',
+                       mb: 1
+                     }}>
+                       实际日耗
+                     </Typography>
+                     <Typography variant="h4" sx={{
+                       color: 'primary.main',
+                       fontWeight: 700,
+                       fontFamily: 'system-ui, -apple-system, sans-serif'
+                     }}>
+                       ¥{Number(selectedRow.actual).toFixed(2)}
+                     </Typography>
+                   </Paper>
+                 </Grid>
+                 
+                 <Grid item xs={12} sm={6}>
+                   <Paper sx={{
+                     p: 3,
+                     background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))',
+                     border: '1px solid rgba(245, 158, 11, 0.2)',
+                     borderRadius: 2
+                   }}>
+                     <Typography variant="h6" sx={{
+                       color: 'warning.main',
+                       fontWeight: 600,
+                       fontFamily: 'system-ui, -apple-system, sans-serif',
+                       mb: 1
+                     }}>
+                       购买时间
+                     </Typography>
+                     <Typography variant="h5" sx={{
+                       color: 'warning.main',
+                       fontWeight: 700,
+                       fontFamily: 'system-ui, -apple-system, sans-serif'
+                     }}>
+                       {new Date(selectedRow.created_at).toLocaleDateString('zh-CN', {
+                         year: 'numeric',
+                         month: 'long',
+                         day: 'numeric'
+                       })}
+                     </Typography>
+                   </Paper>
+                 </Grid>
+                 
+                 <Grid item xs={12} sm={6}>
+                   <Paper sx={{
+                     p: 3,
+                     background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(168, 85, 247, 0.05))',
+                     border: '1px solid rgba(168, 85, 247, 0.2)',
+                     borderRadius: 2
+                   }}>
+                     <Typography variant="h6" sx={{
+                       color: '#a855f7',
+                       fontWeight: 600,
+                       fontFamily: 'system-ui, -apple-system, sans-serif',
+                       mb: 1
+                     }}>
+                       服役天数
+                     </Typography>
+                     <Typography variant="h4" sx={{
+                       color: '#a855f7',
+                       fontWeight: 700,
+                       fontFamily: 'system-ui, -apple-system, sans-serif'
+                     }}>
+                       {selectedRow.service_duration} 天
+                     </Typography>
+                   </Paper>
+                 </Grid>
+                 
+                 {/* 累计消费 */}
+                 <Grid item xs={12}>
+                   <Paper sx={{
+                     p: 3,
+                     background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05))',
+                     border: '1px solid rgba(239, 68, 68, 0.2)',
+                     borderRadius: 2,
+                     textAlign: 'center'
+                   }}>
+                     <Typography variant="h6" sx={{
+                       color: 'error.main',
+                       fontWeight: 600,
+                       fontFamily: 'system-ui, -apple-system, sans-serif',
+                       mb: 1
+                     }}>
+                       累计消费金额
+                     </Typography>
+                     <Typography variant="h3" sx={{
+                       color: 'error.main',
+                       fontWeight: 700,
+                       fontFamily: 'system-ui, -apple-system, sans-serif'
+                     }}>
+                       ¥{(Number(selectedRow.actual) * Number(selectedRow.service_duration)).toFixed(2)}
+                     </Typography>
+                   </Paper>
+                 </Grid>
+                 
+                 {/* 达成状态 */}
+                 <Grid item xs={12}>
+                   <Paper sx={{
+                     p: 3,
+                     background: (() => {
+                       const ratio = Number(selectedRow.actual) / Number(selectedRow.target);
+                       if (ratio <= 1) return 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))';
+                       if (ratio <= 1.5) return 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))';
+                       return 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05))';
+                     })(),
+                     border: (() => {
+                       const ratio = Number(selectedRow.actual) / Number(selectedRow.target);
+                       if (ratio <= 1) return '1px solid rgba(34, 197, 94, 0.2)';
+                       if (ratio <= 1.5) return '1px solid rgba(245, 158, 11, 0.2)';
+                       return '1px solid rgba(239, 68, 68, 0.2)';
+                     })(),
+                     borderRadius: 2,
+                     textAlign: 'center'
+                   }}>
+                     <Typography variant="h6" sx={{
+                       color: (() => {
+                         const ratio = Number(selectedRow.actual) / Number(selectedRow.target);
+                         if (ratio <= 1) return 'success.main';
+                         if (ratio <= 1.5) return 'warning.main';
+                         return 'error.main';
+                       })(),
+                       fontWeight: 600,
+                       fontFamily: 'system-ui, -apple-system, sans-serif',
+                       mb: 1
+                     }}>
+                       目标达成状态
+                     </Typography>
+                     <Typography variant="h4" sx={{
+                       color: (() => {
+                         const ratio = Number(selectedRow.actual) / Number(selectedRow.target);
+                         if (ratio <= 1) return 'success.main';
+                         if (ratio <= 1.5) return 'warning.main';
+                         return 'error.main';
+                       })(),
+                       fontWeight: 700,
+                       fontFamily: 'system-ui, -apple-system, sans-serif'
+                     }}>
+                       {(() => {
+                         const ratio = Number(selectedRow.actual) / Number(selectedRow.target);
+                         if (ratio <= 1) {
+                           return '已达成';
+                         } else {
+                           const daysNeeded = Math.ceil((ratio - 1) * Number(selectedRow.service_duration));
+                           return `${daysNeeded}天后达成`;
+                         }
+                       })()}
+                     </Typography>
+                   </Paper>
+                 </Grid>
+               </Grid>
+               
+               {/* 关闭按钮 */}
+               <Box sx={{ textAlign: 'center', mt: 4 }}>
+                 <Button 
+                   variant="contained" 
+                   onClick={handleDetailClose}
+                   sx={{
+                     background: 'linear-gradient(45deg, #667eea 0%, #764ba2 100%)',
+                     '&:hover': {
+                       background: 'linear-gradient(45deg, #5a6fd8 0%, #6a4190 100%)'
+                     },
+                     px: 4,
+                     py: 1.5,
+                     borderRadius: 3,
+                     fontWeight: 600,
+                     fontFamily: 'system-ui, -apple-system, sans-serif'
+                   }}
+                 >
+                   关闭详情
+                 </Button>
+               </Box>
+             </Box>
+           )}
          </DialogContent>
        </Dialog>
     </Box>
