@@ -603,7 +603,7 @@ const History = () => {
                    color: 'text.secondary',
                    fontFamily: 'system-ui, -apple-system, sans-serif'
                  }}>
-                   物品详情信息
+                   {t('itemDetailInfo')}
                  </Typography>
                </Box>
                
@@ -628,7 +628,7 @@ const History = () => {
                        fontFamily: 'system-ui, -apple-system, sans-serif',
                        mb: 0.5
                      }}>
-                       目标日耗
+                       {t('targetDailyCost')}
                      </Typography>
                      <Typography variant="h5" sx={{
                        color: 'success.main',
@@ -659,7 +659,7 @@ const History = () => {
                        fontFamily: 'system-ui, -apple-system, sans-serif',
                        mb: 0.5
                      }}>
-                       实际日耗
+                       {t('actualDailyCost')}
                      </Typography>
                      <Typography variant="h5" sx={{
                        color: 'primary.main',
@@ -690,14 +690,14 @@ const History = () => {
                        fontFamily: 'system-ui, -apple-system, sans-serif',
                        mb: 0.5
                      }}>
-                       购买价格
+                       {t('purchasePrice')}
                      </Typography>
                      <Typography variant="h5" sx={{
                        color: 'warning.main',
                        fontWeight: 700,
                        fontFamily: 'system-ui, -apple-system, sans-serif'
                      }}>
-                       ¥{selectedRow.purchase_price ? Number(selectedRow.purchase_price).toFixed(2) : '未记录'}
+                       ¥{selectedRow.purchase_price ? Number(selectedRow.purchase_price).toFixed(2) : t('notRecorded')}
                      </Typography>
                    </Paper>
                  </Grid>
@@ -721,7 +721,7 @@ const History = () => {
                        fontFamily: 'system-ui, -apple-system, sans-serif',
                        mb: 0.5
                      }}>
-                       已消耗金额
+                       {t('consumedAmount')}
                      </Typography>
                      <Typography variant="h5" sx={{
                        color: 'error.main',
@@ -752,7 +752,7 @@ const History = () => {
                        fontFamily: 'system-ui, -apple-system, sans-serif',
                        mb: 0.5
                      }}>
-                       服役天数
+                       {t('serviceDays')}
                      </Typography>
                      <Typography variant="h5" sx={{
                        color: '#a855f7',
@@ -813,7 +813,7 @@ const History = () => {
                        fontFamily: 'system-ui, -apple-system, sans-serif',
                        mb: 0.5
                      }}>
-                       使用率
+                       {t('usageRate')}
                      </Typography>
                      <Typography variant="h5" sx={{
                        color: (theme) => {
@@ -828,7 +828,7 @@ const History = () => {
                      }}>
                        {selectedRow.purchase_price ? 
                          ((Number(selectedRow.target) * Number(selectedRow.service_duration)) / Number(selectedRow.purchase_price) * 100).toFixed(1) + '%' 
-                         : '未知'}
+                         : t('unknown')}
                      </Typography>
                    </Paper>
                  </Grid>
@@ -852,7 +852,7 @@ const History = () => {
                      fontFamily: 'system-ui, -apple-system, sans-serif'
                    }}
                  >
-                   关闭详情
+                   {t('closeDetail')}
                  </Button>
                </Box>
              </Box>

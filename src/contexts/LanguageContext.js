@@ -12,7 +12,6 @@ const translations = {
     residualValueCalculator: '残值计算器',
     productName: '商品名称',
     productNamePlaceholder: '请输入商品名称',
-    purchasePrice: '购买价格',
     purchasePricePlaceholder: '请输入购买价格',
     targetDailyConsumption: '目标日耗',
     targetDailyConsumptionPlaceholder: '请输入目标日耗金额',
@@ -21,7 +20,6 @@ const translations = {
     // Calculator页面新增
     itemResidualValueManagement: '物品残值管理',
     itemName: '物品名称',
-    targetDailyCost: '¥目标日耗',
     purchaseDate: '入手日期',
     itemStatus: '物品状态',
     inUse: '使用中',
@@ -31,7 +29,6 @@ const translations = {
     calculating: '计算中...',
     calculationResults: '计算结果',
     daysInService: '已服役',
-    actualDailyCost: '实际日耗',
     dailyCost: '每日成本',
     targetCost: '目标成本',
     exceedsTarget: '超出目标',
@@ -48,11 +45,9 @@ const translations = {
     noRecords: '暂无记录',
     noRecordsDesc: '还没有任何购买记录，快去添加第一个商品吧！',
     actualDailyConsumption: '实际日耗',
-    consumedAmount: '已消耗金额',
-    serviceDays: '服役天数',
-    usageRate: '使用率',
     notRecorded: '未记录',
     noPurchasePrice: '无购买价格',
+    unknown: '未知',
     
     // History页面新增
     calculationHistory: '计算历史',
@@ -127,6 +122,16 @@ const translations = {
     pleaseLoginFirst: '请先登录账户',
     loginToViewAnalysis: '登录后即可查看购物分析记录',
     loginNow: '立即登录',
+    
+    // 物品详情页面
+    itemDetailInfo: '物品详情信息',
+    targetDailyCost: '目标日耗',
+    actualDailyCost: '实际日耗',
+    purchasePrice: '购买价格',
+    consumedAmount: '已消耗金额',
+    serviceDays: '服役天数',
+    usageRate: '使用率',
+    closeDetail: '关闭详情',
   },
   
   'zh-TW': {
@@ -139,7 +144,6 @@ const translations = {
     residualValueCalculator: '殘值計算器',
     productName: '商品名稱',
     productNamePlaceholder: '請輸入商品名稱',
-    purchasePrice: '購買價格',
     purchasePricePlaceholder: '請輸入購買價格',
     targetDailyConsumption: '目標日耗',
     targetDailyConsumptionPlaceholder: '請輸入目標日耗金額',
@@ -148,7 +152,6 @@ const translations = {
     // Calculator頁面新增
     itemResidualValueManagement: '物品殘值管理',
     itemName: '物品名稱',
-    targetDailyCost: '¥目標日耗',
     purchaseDate: '入手日期',
     itemStatus: '物品狀態',
     inUse: '使用中',
@@ -158,7 +161,6 @@ const translations = {
     calculating: '計算中...',
     calculationResults: '計算結果',
     daysInService: '已服役',
-    actualDailyCost: '實際日耗',
     dailyCost: '每日成本',
     targetCost: '目標成本',
     exceedsTarget: '超出目標',
@@ -175,11 +177,9 @@ const translations = {
     noRecords: '暫無記錄',
     noRecordsDesc: '還沒有任何購買記錄，快去添加第一個商品吧！',
     actualDailyConsumption: '實際日耗',
-    consumedAmount: '已消耗金額',
-    serviceDays: '服役天數',
-    usageRate: '使用率',
     notRecorded: '未記錄',
     noPurchasePrice: '無購買價格',
+    unknown: '未知',
     
     // History頁面新增
     calculationHistory: '計算歷史',
@@ -252,6 +252,16 @@ const translations = {
     pleaseLoginFirst: '請先登錄賬戶',
     loginToViewAnalysis: '登錄後即可查看購物分析記錄',
     loginNow: '立即登錄',
+    
+    // 物品詳情頁面
+    itemDetailInfo: '物品詳情信息',
+    targetDailyCost: '目標日耗',
+    actualDailyCost: '實際日耗',
+    purchasePrice: '購買價格',
+    consumedAmount: '已消耗金額',
+    serviceDays: '服役天數',
+    usageRate: '使用率',
+    closeDetail: '關閉詳情',
   },
   
   'en': {
@@ -264,7 +274,6 @@ const translations = {
     residualValueCalculator: 'Residual Value Calculator',
     productName: 'Product Name',
     productNamePlaceholder: 'Enter product name',
-    purchasePrice: 'Purchase Price',
     purchasePricePlaceholder: 'Enter purchase price',
     targetDailyConsumption: 'Target Daily Consumption',
     targetDailyConsumptionPlaceholder: 'Enter target daily consumption amount',
@@ -273,7 +282,6 @@ const translations = {
     // Calculator Page New
     itemResidualValueManagement: 'Item Residual Value Management',
     itemName: 'Item Name',
-    targetDailyCost: '$Target Daily Cost',
     purchaseDate: 'Purchase Date',
     itemStatus: 'Item Status',
     inUse: 'In Use',
@@ -283,7 +291,6 @@ const translations = {
     calculating: 'Calculating...',
     calculationResults: 'Calculation Results',
     daysInService: 'Days in Service',
-    actualDailyCost: 'Actual Daily Cost',
     dailyCost: 'Daily Cost',
     targetCost: 'Target Cost',
     exceedsTarget: 'Exceeds Target',
@@ -300,11 +307,9 @@ const translations = {
     noRecords: 'No Records',
     noRecordsDesc: 'No purchase records yet, add your first product!',
     actualDailyConsumption: 'Actual Daily Consumption',
-    consumedAmount: 'Consumed Amount',
-    serviceDays: 'Service Days',
-    usageRate: 'Usage Rate',
     notRecorded: 'Not Recorded',
     noPurchasePrice: 'No Purchase Price',
+    unknown: 'Unknown',
     
     // History Page New
     calculationHistory: 'Calculation History',
@@ -379,6 +384,16 @@ const translations = {
     pleaseLoginFirst: 'Please login first',
     loginToViewAnalysis: 'Login to view shopping analysis records',
     loginNow: 'Login Now',
+    
+    // Item detail page
+    itemDetailInfo: 'Item Detail Information',
+    targetDailyCost: 'Target Daily Cost',
+    actualDailyCost: 'Actual Daily Cost',
+    purchasePrice: 'Purchase Price',
+    consumedAmount: 'Consumed Amount',
+    serviceDays: 'Service Days',
+    usageRate: 'Usage Rate',
+    closeDetail: 'Close Detail',
   },
   
   'ja': {
@@ -391,7 +406,6 @@ const translations = {
     residualValueCalculator: '残存価値計算機',
     productName: '商品名',
     productNamePlaceholder: '商品名を入力してください',
-    purchasePrice: '購入価格',
     purchasePricePlaceholder: '購入価格を入力してください',
     targetDailyConsumption: '目標日消費',
     targetDailyConsumptionPlaceholder: '目標日消費金額を入力してください',
@@ -400,7 +414,6 @@ const translations = {
     // Calculator ページ新規
     itemResidualValueManagement: 'アイテム残存価値管理',
     itemName: 'アイテム名',
-    targetDailyCost: '¥目標日コスト',
     purchaseDate: '購入日',
     itemStatus: 'アイテムステータス',
     inUse: '使用中',
@@ -410,7 +423,6 @@ const translations = {
     calculating: '計算中...',
     calculationResults: '計算結果',
     daysInService: '使用日数',
-    actualDailyCost: '実際の日コスト',
     dailyCost: '日コスト',
     targetCost: '目標コスト',
     exceedsTarget: '目標超過',
@@ -427,11 +439,9 @@ const translations = {
     noRecords: 'レコードなし',
     noRecordsDesc: '購入記録がまだありません。最初の商品を追加してください！',
     actualDailyConsumption: '実際の日消費',
-    consumedAmount: '消費金額',
-    serviceDays: 'サービス日数',
-    usageRate: '使用率',
     notRecorded: '記録なし',
     noPurchasePrice: '購入価格なし',
+    unknown: '不明',
     
     // History ページ新規
     calculationHistory: '計算履歴',
@@ -506,6 +516,15 @@ const translations = {
     pleaseLoginFirst: 'まずログインしてください',
     loginToViewAnalysis: 'ログインしてショッピング分析記録を表示',
     loginNow: '今すぐログイン',
+    
+    // アイテム詳細ページ
+    itemDetailInfo: 'アイテム詳細情報',
+    targetDailyCost: '目標日額',
+    actualDailyCost: '実際日額',
+    consumedAmount: '消費金額',
+    serviceDays: 'サービス日数',
+    usageRate: '使用率',
+    closeDetail: '詳細を閉じる',
   },
 };
 
