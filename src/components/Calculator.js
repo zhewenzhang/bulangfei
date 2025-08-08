@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import AuthComponent from './Auth';
 import { Dialog, DialogContent } from '@mui/material';
 import {
@@ -24,6 +25,7 @@ import {
 
 const Calculator = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [formState, setFormState] = useState({
     name: '',
     purchasePrice: '',
@@ -110,6 +112,7 @@ const Calculator = () => {
       target: results.targetDailyCost, 
       actual: results.actualDailyCost, 
       service_duration: results.daysInService,
+      purchase_price: formState.purchasePrice ? parseFloat(formState.purchasePrice) : null,
       user_id: user.id
     };
 
@@ -146,7 +149,7 @@ const Calculator = () => {
               color: 'text.secondary',
               fontSize: '1.1rem'
             }}>
-              物品残值管理
+              {t('itemResidualValueManagement')}
             </Typography>
           }
           sx={{ pb: 1 }}
@@ -157,7 +160,7 @@ const Calculator = () => {
               <TextField 
                 fullWidth 
                 variant="filled" 
-                label="物品名称" 
+                label={t('itemName')} 
                 name="name" 
                 value={formState.name} 
                 onChange={handleChange}
@@ -169,7 +172,7 @@ const Calculator = () => {
                 fullWidth 
                 type="number" 
                 variant="filled" 
-                label="¥入手价格" 
+                label={t('purchasePrice')} 
                 name="purchasePrice" 
                 value={formState.purchasePrice} 
                 onChange={handleChange}
@@ -181,7 +184,7 @@ const Calculator = () => {
                 fullWidth 
                 type="number" 
                 variant="filled" 
-                label="¥目标日耗" 
+                label={t('targetDailyCost')} 
                 name="targetDailyCost" 
                 value={formState.targetDailyCost} 
                 onChange={handleChange}
@@ -191,7 +194,7 @@ const Calculator = () => {
             <Grid item xs={12} sm={6}>
               <TextField 
                 fullWidth 
-                label="入手日期" 
+                label={t('purchaseDate')} 
                 type="date" 
                 name="purchaseDate" 
                 variant="filled" 
@@ -202,11 +205,11 @@ const Calculator = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth variant="filled">
-                <InputLabel sx={{ fontSize: '1.1rem' }}>物品状态</InputLabel>
-                <Select name="status" value={formState.status} onChange={handleChange} label="物品状态">
-                  <MenuItem value="In Use">使用中</MenuItem>
-                  <MenuItem value="Discontinued">已停用</MenuItem>
-                  <MenuItem value="Sold">已出售</MenuItem>
+                <InputLabel sx={{ fontSize: '1.1rem' }}>{t('itemStatus')}</InputLabel>
+                <Select name="status" value={formState.status} onChange={handleChange} label={t('itemStatus')}>
+                  <MenuItem value="In Use">{t('inUse')}</MenuItem>
+                  <MenuItem value="Discontinued">{t('discontinued')}</MenuItem>
+                  <MenuItem value="Sold">{t('sold')}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -217,7 +220,7 @@ const Calculator = () => {
                     fullWidth 
                     type="number" 
                     variant="filled" 
-                    label="¥出售价格" 
+                    label={t('salePrice')} 
                     name="soldPrice" 
                     value={formState.soldPrice} 
                     onChange={handleChange}
@@ -246,10 +249,10 @@ const Calculator = () => {
                 {loading ? (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <CircularProgress size={24} color="inherit" />
-                    <Typography>计算中...</Typography>
+                    <Typography>{t('calculating')}</Typography>
                   </Box>
                 ) : (
-                  '计算'
+                  t('calculate')
                 )}
               </Button>
             </Grid>
@@ -279,7 +282,7 @@ const Calculator = () => {
                 justifyContent: 'center',
                 gap: 1
               }}>
-                计算结果
+                {t('calculationResults')}
               </Typography>
             }
           />
@@ -304,11 +307,11 @@ const Calculator = () => {
                       textAlign: 'center',
                       p: 2
                     }}>
-                      <Typography variant="h6" color="success.main" sx={{ mb: 1 }}>已服役</Typography>
+                      <Typography variant="h6" color="success.main" sx={{ mb: 1 }}>{t('daysInService')}</Typography>
                       <Typography variant="h3" sx={{ fontWeight: 700, color: 'success.main' }}>
                         {results.daysInService}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">天</Typography>
+                      <Typography variant="body2" color="text.secondary">{t('days')}</Typography>
                     </Card>
                   </Grid>
                   
@@ -320,11 +323,11 @@ const Calculator = () => {
                       textAlign: 'center',
                       p: 2
                     }}>
-                      <Typography variant="h6" color="primary.main" sx={{ mb: 1 }}>实际日耗</Typography>
+                      <Typography variant="h6" color="primary.main" sx={{ mb: 1 }}>{t('actualDailyCost')}</Typography>
                       <Typography variant="h3" sx={{ fontWeight: 700, color: 'primary.main' }}>
                         ¥{results.actualDailyCost}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">每日成本</Typography>
+                      <Typography variant="body2" color="text.secondary">{t('dailyCost')}</Typography>
                     </Card>
                   </Grid>
                   
@@ -336,11 +339,11 @@ const Calculator = () => {
                       textAlign: 'center',
                       p: 2
                     }}>
-                      <Typography variant="h6" color="warning.main" sx={{ mb: 1 }}>目标日耗</Typography>
+                      <Typography variant="h6" color="warning.main" sx={{ mb: 1 }}>{t('targetDailyCost')}</Typography>
                       <Typography variant="h3" sx={{ fontWeight: 700, color: 'warning.main' }}>
                         ¥{results.targetDailyCost}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">目标成本</Typography>
+                      <Typography variant="body2" color="text.secondary">{t('targetCost')}</Typography>
                     </Card>
                   </Grid>
                   
@@ -353,7 +356,7 @@ const Calculator = () => {
                       p: 2
                     }}>
                       <Typography variant="h6" color={results.overUnder > 0 ? 'error.main' : 'success.main'} sx={{ mb: 1 }}>
-                        {results.overUnder > 0 ? '超出目标' : '低于目标'}
+                        {results.overUnder > 0 ? t('exceedsTarget') : t('belowTarget')}
                       </Typography>
                       <Typography variant="h3" sx={{ 
                         fontWeight: 700, 
@@ -361,7 +364,7 @@ const Calculator = () => {
                       }}>
                         {results.overUnder > 0 ? '+' : ''}¥{results.overUnder}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">与目标差额</Typography>
+                      <Typography variant="body2" color="text.secondary">{t('differenceFromTarget')}</Typography>
                     </Card>
                   </Grid>
                 </Grid>
@@ -384,14 +387,14 @@ const Calculator = () => {
                     mb: 1
                   }}>
                     {results.daysToMeetTarget > 0 ? 
-                      `还需要 ${results.daysToMeetTarget} 天可达成目标` : 
-                      "已达成目标!"
+                      t('daysToMeetTarget').replace('{days}', results.daysToMeetTarget) : 
+                      t('targetAchieved')
                     }
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
                     {results.daysToMeetTarget > 0 ? 
-                      '继续使用以降低日均成本' : 
-                      '恭喜！您的使用效率很高'
+                      t('continueUsing') : 
+                      t('congratulations')
                     }
                   </Typography>
                 </Card>
@@ -418,10 +421,10 @@ const Calculator = () => {
                     {saving ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <CircularProgress size={24} color="inherit" />
-                        <Typography>保存中...</Typography>
+                        <Typography>{t('saving')}</Typography>
                       </Box>
                     ) : (
-                      '保存并分析'
+                      t('saveAndAnalyze')
                     )}
                   </Button>
                 </Box>

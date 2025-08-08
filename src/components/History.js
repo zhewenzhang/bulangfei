@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import {
   Box,
   Card,
@@ -58,15 +59,18 @@ function descendingComparator(a, b, orderBy) {
   return 0;
 }
 
-const headCells = [
-  { id: 'name', numeric: false, label: '物品名称' },
-  { id: 'target', numeric: true, label: '目标日耗' },
-  { id: 'actual', numeric: true, label: '实际日耗' },
-  { id: 'service_duration', numeric: true, label: '服役天数' },
-];
+// 将headCells移到组件内部，以便使用翻译函数
 
 const History = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
+  
+  const headCells = [
+    { id: 'name', numeric: false, label: t('itemNameCol') },
+    { id: 'target', numeric: true, label: t('targetDailyCostCol') },
+    { id: 'actual', numeric: true, label: t('actualDailyCostCol') },
+    { id: 'service_duration', numeric: true, label: t('serviceDurationCol') },
+  ];
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('service_duration');
   const [rows, setRows] = useState([]);
@@ -150,7 +154,7 @@ const History = () => {
               fontWeight: 700,
               fontFamily: 'system-ui, -apple-system, sans-serif'
             }}>
-              计算历史
+              {t('calculationHistory')}
             </Typography>
           }
           subheader={
@@ -160,7 +164,7 @@ const History = () => {
               fontSize: '1rem',
               fontFamily: 'system-ui, -apple-system, sans-serif'
             }}>
-              历史计算记录 ({rows.length} 条记录)
+              {t('historyRecords').replace('{count}', rows.length)}
             </Typography>
           }
         />
@@ -183,7 +187,7 @@ const History = () => {
                     fontFamily: 'system-ui, -apple-system, sans-serif',
                     mb: 1
                   }}>
-                    累计消费
+                    {t('totalConsumption')}
                   </Typography>
                   <Typography variant="h4" sx={{
                     color: 'success.main',
@@ -209,7 +213,7 @@ const History = () => {
                     fontFamily: 'system-ui, -apple-system, sans-serif',
                     mb: 1
                   }}>
-                    已达成数量
+                    {t('achievedCount')}
                   </Typography>
                   <Typography variant="h4" sx={{
                     color: 'primary.main',
@@ -235,7 +239,7 @@ const History = () => {
                     fontFamily: 'system-ui, -apple-system, sans-serif',
                     mb: 1
                   }}>
-                    预计达成
+                    {t('estimatedAchievement')}
                   </Typography>
                   <Typography variant="h4" sx={{
                     color: 'warning.main',
@@ -244,7 +248,7 @@ const History = () => {
                   }}>
                     {(() => {
                       const unachievedItems = rows.filter(row => Number(row.actual) > Number(row.target));
-                      if (unachievedItems.length === 0) return '全部达成';
+                      if (unachievedItems.length === 0) return t('allAchieved');
                       const avgDaysNeeded = unachievedItems.reduce((sum, row) => {
                         const ratio = Number(row.actual) / Number(row.target);
                         return sum + Math.ceil((ratio - 1) * Number(row.service_duration));
@@ -318,7 +322,7 @@ const History = () => {
                   width: '16%',
                   padding: { xs: '8px 4px', sm: '12px 8px', md: '16px 12px' }
                 }}>
-                  是否达成
+                  {t('achievementStatus')}
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -328,7 +332,7 @@ const History = () => {
                   <TableCell colSpan={headCells.length + 1} align="center" sx={{ py: 6 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                       <CircularProgress size={40} />
-                      <Typography variant="h6" color="text.secondary" sx={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>加载中...</Typography>
+                      <Typography variant="h6" color="text.secondary" sx={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>{t('loading')}</Typography>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -336,7 +340,7 @@ const History = () => {
                 <TableRow>
                   <TableCell colSpan={headCells.length + 1} align="center" sx={{ py: 6 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                      <Typography variant="h6" color="error.main" sx={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>加载失败</Typography>
+                      <Typography variant="h6" color="error.main" sx={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>{t('loadFailed')}</Typography>
                       <Typography color="text.secondary" sx={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>{error}</Typography>
                     </Box>
                   </TableCell>
@@ -437,7 +441,7 @@ const History = () => {
                         width: '20%',
                         padding: { xs: '8px 4px', sm: '12px 8px', md: '16px 12px' }
                       }}>
-                        {row.service_duration} 天
+                        {row.service_duration}{t('days')}
                       </TableCell>
                       <TableCell align="center" sx={{ 
                         width: '16%',
@@ -461,11 +465,11 @@ const History = () => {
                             {(() => {
                               const ratio = actual / target;
                               if (ratio <= 1) {
-                                return '已达成';
+                                return t('achieved');
                               } else {
                                 // 计算还需要多少天才能达成目标
                                 const daysNeeded = Math.ceil((actual - target) / target * row.service_duration);
-                                return `${daysNeeded}天后达成`;
+                                return `${daysNeeded}${t('daysToAchieve')}`;
                               }
                             })()}
                           </Typography>
@@ -548,10 +552,16 @@ const History = () => {
              borderRadius: '20px 20px 0 0',
              maxHeight: '70vh',
              width: '100%',
-             background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05))',
+             background: (theme) => theme.palette.mode === 'dark' 
+               ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05))'
+               : 'linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.98))',
              backdropFilter: 'blur(20px)',
-             boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.2)',
-             border: '1px solid rgba(99, 102, 241, 0.2)',
+             boxShadow: (theme) => theme.palette.mode === 'dark'
+               ? '0 -10px 40px rgba(0, 0, 0, 0.2)'
+               : '0 -10px 40px rgba(0, 0, 0, 0.1), 0 -4px 20px rgba(0, 0, 0, 0.05)',
+             border: (theme) => theme.palette.mode === 'dark'
+               ? '1px solid rgba(99, 102, 241, 0.2)'
+               : '1px solid rgba(203, 213, 225, 0.4)',
              animation: 'slideUp 0.3s ease-out',
              '@keyframes slideUp': {
                from: {
@@ -599,22 +609,28 @@ const History = () => {
                
                {/* 详情信息网格 */}
                <Grid container spacing={3}>
-                 <Grid item xs={12} sm={6}>
+                 {/* 目标日耗 */}
+                 <Grid item xs={12} sm={4}>
                    <Paper sx={{
-                     p: 3,
-                     background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))',
-                     border: '1px solid rgba(34, 197, 94, 0.2)',
-                     borderRadius: 2
+                     p: 2,
+                     background: (theme) => theme.palette.mode === 'dark'
+                       ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))'
+                       : 'linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.08))',
+                     border: (theme) => theme.palette.mode === 'dark'
+                       ? '1px solid rgba(34, 197, 94, 0.2)'
+                       : '1px solid rgba(34, 197, 94, 0.3)',
+                     borderRadius: 2,
+                     textAlign: 'center'
                    }}>
-                     <Typography variant="h6" sx={{
+                     <Typography variant="subtitle2" sx={{
                        color: 'success.main',
                        fontWeight: 600,
                        fontFamily: 'system-ui, -apple-system, sans-serif',
-                       mb: 1
+                       mb: 0.5
                      }}>
                        目标日耗
                      </Typography>
-                     <Typography variant="h4" sx={{
+                     <Typography variant="h5" sx={{
                        color: 'success.main',
                        fontWeight: 700,
                        fontFamily: 'system-ui, -apple-system, sans-serif'
@@ -624,22 +640,28 @@ const History = () => {
                    </Paper>
                  </Grid>
                  
-                 <Grid item xs={12} sm={6}>
+                 {/* 实际日耗 */}
+                 <Grid item xs={12} sm={4}>
                    <Paper sx={{
-                     p: 3,
-                     background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))',
-                     border: '1px solid rgba(59, 130, 246, 0.2)',
-                     borderRadius: 2
+                     p: 2,
+                     background: (theme) => theme.palette.mode === 'dark'
+                       ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))'
+                       : 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.08))',
+                     border: (theme) => theme.palette.mode === 'dark'
+                       ? '1px solid rgba(59, 130, 246, 0.2)'
+                       : '1px solid rgba(59, 130, 246, 0.3)',
+                     borderRadius: 2,
+                     textAlign: 'center'
                    }}>
-                     <Typography variant="h6" sx={{
+                     <Typography variant="subtitle2" sx={{
                        color: 'primary.main',
                        fontWeight: 600,
                        fontFamily: 'system-ui, -apple-system, sans-serif',
-                       mb: 1
+                       mb: 0.5
                      }}>
                        实际日耗
                      </Typography>
-                     <Typography variant="h4" sx={{
+                     <Typography variant="h5" sx={{
                        color: 'primary.main',
                        fontWeight: 700,
                        fontFamily: 'system-ui, -apple-system, sans-serif'
@@ -649,51 +671,90 @@ const History = () => {
                    </Paper>
                  </Grid>
                  
-                 <Grid item xs={12} sm={6}>
+                 {/* 购买价格 */}
+                 <Grid item xs={12} sm={4}>
                    <Paper sx={{
-                     p: 3,
-                     background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))',
-                     border: '1px solid rgba(245, 158, 11, 0.2)',
-                     borderRadius: 2
+                     p: 2,
+                     background: (theme) => theme.palette.mode === 'dark'
+                       ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))'
+                       : 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.08))',
+                     border: (theme) => theme.palette.mode === 'dark'
+                       ? '1px solid rgba(245, 158, 11, 0.2)'
+                       : '1px solid rgba(245, 158, 11, 0.3)',
+                     borderRadius: 2,
+                     textAlign: 'center'
                    }}>
-                     <Typography variant="h6" sx={{
+                     <Typography variant="subtitle2" sx={{
                        color: 'warning.main',
                        fontWeight: 600,
                        fontFamily: 'system-ui, -apple-system, sans-serif',
-                       mb: 1
+                       mb: 0.5
                      }}>
-                       购买时间
+                       购买价格
                      </Typography>
                      <Typography variant="h5" sx={{
                        color: 'warning.main',
                        fontWeight: 700,
                        fontFamily: 'system-ui, -apple-system, sans-serif'
                      }}>
-                       {new Date(selectedRow.created_at).toLocaleDateString('zh-CN', {
-                         year: 'numeric',
-                         month: 'long',
-                         day: 'numeric'
-                       })}
+                       ¥{selectedRow.purchase_price ? Number(selectedRow.purchase_price).toFixed(2) : '未记录'}
                      </Typography>
                    </Paper>
                  </Grid>
                  
-                 <Grid item xs={12} sm={6}>
+                 {/* 已消耗金额 */}
+                 <Grid item xs={12} sm={4}>
                    <Paper sx={{
-                     p: 3,
-                     background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(168, 85, 247, 0.05))',
-                     border: '1px solid rgba(168, 85, 247, 0.2)',
-                     borderRadius: 2
+                     p: 2,
+                     background: (theme) => theme.palette.mode === 'dark'
+                       ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05))'
+                       : 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.08))',
+                     border: (theme) => theme.palette.mode === 'dark'
+                       ? '1px solid rgba(239, 68, 68, 0.2)'
+                       : '1px solid rgba(239, 68, 68, 0.3)',
+                     borderRadius: 2,
+                     textAlign: 'center'
                    }}>
-                     <Typography variant="h6" sx={{
+                     <Typography variant="subtitle2" sx={{
+                       color: 'error.main',
+                       fontWeight: 600,
+                       fontFamily: 'system-ui, -apple-system, sans-serif',
+                       mb: 0.5
+                     }}>
+                       已消耗金额
+                     </Typography>
+                     <Typography variant="h5" sx={{
+                       color: 'error.main',
+                       fontWeight: 700,
+                       fontFamily: 'system-ui, -apple-system, sans-serif'
+                     }}>
+                       ¥{(Number(selectedRow.target) * Number(selectedRow.service_duration)).toFixed(2)}
+                     </Typography>
+                   </Paper>
+                 </Grid>
+                 
+                 {/* 服役天数 */}
+                 <Grid item xs={12} sm={4}>
+                   <Paper sx={{
+                     p: 2,
+                     background: (theme) => theme.palette.mode === 'dark'
+                       ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(168, 85, 247, 0.05))'
+                       : 'linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(168, 85, 247, 0.08))',
+                     border: (theme) => theme.palette.mode === 'dark'
+                       ? '1px solid rgba(168, 85, 247, 0.2)'
+                       : '1px solid rgba(168, 85, 247, 0.3)',
+                     borderRadius: 2,
+                     textAlign: 'center'
+                   }}>
+                     <Typography variant="subtitle2" sx={{
                        color: '#a855f7',
                        fontWeight: 600,
                        fontFamily: 'system-ui, -apple-system, sans-serif',
-                       mb: 1
+                       mb: 0.5
                      }}>
                        服役天数
                      </Typography>
-                     <Typography variant="h4" sx={{
+                     <Typography variant="h5" sx={{
                        color: '#a855f7',
                        fontWeight: 700,
                        fontFamily: 'system-ui, -apple-system, sans-serif'
@@ -703,87 +764,75 @@ const History = () => {
                    </Paper>
                  </Grid>
                  
-                 {/* 累计消费 */}
-                 <Grid item xs={12}>
+                 {/* 使用率 */}
+                 <Grid item xs={12} sm={4}>
                    <Paper sx={{
-                     p: 3,
-                     background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05))',
-                     border: '1px solid rgba(239, 68, 68, 0.2)',
+                     p: 2,
+                     background: (theme) => {
+                       const usageRate = selectedRow.purchase_price ? 
+                         (Number(selectedRow.target) * Number(selectedRow.service_duration)) / Number(selectedRow.purchase_price) * 100 : 0;
+                       const isDark = theme.palette.mode === 'dark';
+                       if (usageRate >= 80) {
+                         return isDark 
+                           ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))'
+                           : 'linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.08))';
+                       } else if (usageRate >= 50) {
+                         return isDark 
+                           ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))'
+                           : 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.08))';
+                       } else {
+                         return isDark 
+                           ? 'linear-gradient(135deg, rgba(156, 163, 175, 0.1), rgba(156, 163, 175, 0.05))'
+                           : 'linear-gradient(135deg, rgba(156, 163, 175, 0.15), rgba(156, 163, 175, 0.08))';
+                       }
+                     },
+                     border: (theme) => {
+                       const usageRate = selectedRow.purchase_price ? 
+                         (Number(selectedRow.target) * Number(selectedRow.service_duration)) / Number(selectedRow.purchase_price) * 100 : 0;
+                       const isDark = theme.palette.mode === 'dark';
+                       if (usageRate >= 80) {
+                         return isDark ? '1px solid rgba(34, 197, 94, 0.2)' : '1px solid rgba(34, 197, 94, 0.3)';
+                       } else if (usageRate >= 50) {
+                         return isDark ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(245, 158, 11, 0.3)';
+                       } else {
+                         return isDark ? '1px solid rgba(156, 163, 175, 0.2)' : '1px solid rgba(156, 163, 175, 0.3)';
+                       }
+                     },
                      borderRadius: 2,
                      textAlign: 'center'
                    }}>
-                     <Typography variant="h6" sx={{
-                       color: 'error.main',
+                     <Typography variant="subtitle2" sx={{
+                       color: (theme) => {
+                         const usageRate = selectedRow.purchase_price ? 
+                           (Number(selectedRow.target) * Number(selectedRow.service_duration)) / Number(selectedRow.purchase_price) * 100 : 0;
+                         if (usageRate >= 80) return 'success.main';
+                         if (usageRate >= 50) return 'warning.main';
+                         return 'text.secondary';
+                       },
                        fontWeight: 600,
                        fontFamily: 'system-ui, -apple-system, sans-serif',
-                       mb: 1
+                       mb: 0.5
                      }}>
-                       累计消费金额
+                       使用率
                      </Typography>
-                     <Typography variant="h3" sx={{
-                       color: 'error.main',
+                     <Typography variant="h5" sx={{
+                       color: (theme) => {
+                         const usageRate = selectedRow.purchase_price ? 
+                           (Number(selectedRow.target) * Number(selectedRow.service_duration)) / Number(selectedRow.purchase_price) * 100 : 0;
+                         if (usageRate >= 80) return 'success.main';
+                         if (usageRate >= 50) return 'warning.main';
+                         return 'text.secondary';
+                       },
                        fontWeight: 700,
                        fontFamily: 'system-ui, -apple-system, sans-serif'
                      }}>
-                       ¥{(Number(selectedRow.actual) * Number(selectedRow.service_duration)).toFixed(2)}
+                       {selectedRow.purchase_price ? 
+                         ((Number(selectedRow.target) * Number(selectedRow.service_duration)) / Number(selectedRow.purchase_price) * 100).toFixed(1) + '%' 
+                         : '未知'}
                      </Typography>
                    </Paper>
                  </Grid>
-                 
-                 {/* 达成状态 */}
-                 <Grid item xs={12}>
-                   <Paper sx={{
-                     p: 3,
-                     background: (() => {
-                       const ratio = Number(selectedRow.actual) / Number(selectedRow.target);
-                       if (ratio <= 1) return 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))';
-                       if (ratio <= 1.5) return 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05))';
-                       return 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05))';
-                     })(),
-                     border: (() => {
-                       const ratio = Number(selectedRow.actual) / Number(selectedRow.target);
-                       if (ratio <= 1) return '1px solid rgba(34, 197, 94, 0.2)';
-                       if (ratio <= 1.5) return '1px solid rgba(245, 158, 11, 0.2)';
-                       return '1px solid rgba(239, 68, 68, 0.2)';
-                     })(),
-                     borderRadius: 2,
-                     textAlign: 'center'
-                   }}>
-                     <Typography variant="h6" sx={{
-                       color: (() => {
-                         const ratio = Number(selectedRow.actual) / Number(selectedRow.target);
-                         if (ratio <= 1) return 'success.main';
-                         if (ratio <= 1.5) return 'warning.main';
-                         return 'error.main';
-                       })(),
-                       fontWeight: 600,
-                       fontFamily: 'system-ui, -apple-system, sans-serif',
-                       mb: 1
-                     }}>
-                       目标达成状态
-                     </Typography>
-                     <Typography variant="h4" sx={{
-                       color: (() => {
-                         const ratio = Number(selectedRow.actual) / Number(selectedRow.target);
-                         if (ratio <= 1) return 'success.main';
-                         if (ratio <= 1.5) return 'warning.main';
-                         return 'error.main';
-                       })(),
-                       fontWeight: 700,
-                       fontFamily: 'system-ui, -apple-system, sans-serif'
-                     }}>
-                       {(() => {
-                         const ratio = Number(selectedRow.actual) / Number(selectedRow.target);
-                         if (ratio <= 1) {
-                           return '已达成';
-                         } else {
-                           const daysNeeded = Math.ceil((ratio - 1) * Number(selectedRow.service_duration));
-                           return `${daysNeeded}天后达成`;
-                         }
-                       })()}
-                     </Typography>
-                   </Paper>
-                 </Grid>
+
                </Grid>
                
                {/* 关闭按钮 */}

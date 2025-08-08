@@ -357,14 +357,14 @@ export const createAppTheme = (mode) => createTheme({
           borderRadius: mode === 'dark' ? 16 : 12,
           background: mode === 'dark'
             ? 'rgba(28, 28, 30, 0.9)'
-            : 'rgba(255, 255, 255, 0.9)',
+            : '#ffffff',
           backdropFilter: 'blur(20px)',
           border: mode === 'dark'
             ? '1px solid rgba(84, 84, 88, 0.6)'
-            : '1px solid rgba(60, 60, 67, 0.29)',
+            : '1px solid rgba(203, 213, 225, 0.6)',
           boxShadow: mode === 'dark'
             ? '0 8px 32px rgba(0, 0, 0, 0.4)'
-            : '0 8px 32px rgba(0, 0, 0, 0.1)',
+            : '0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1)',
         },
       },
     },
@@ -373,19 +373,19 @@ export const createAppTheme = (mode) => createTheme({
         root: {
           background: mode === 'dark'
             ? 'linear-gradient(45deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))'
-            : 'linear-gradient(45deg, rgba(0, 122, 255, 0.1), rgba(90, 200, 250, 0.1))',
+            : 'linear-gradient(45deg, rgba(248, 250, 252, 0.95), rgba(241, 245, 249, 0.95))',
           '& .MuiTableCell-head': {
             fontWeight: 700,
             fontSize: '1rem',
             letterSpacing: '-0.003em',
-            color: mode === 'dark' ? '#ffffff' : '#000000',
+            color: mode === 'dark' ? '#ffffff' : '#1e293b',
             borderBottom: mode === 'dark'
               ? '2px solid rgba(99, 102, 241, 0.3)'
-              : '2px solid rgba(0, 122, 255, 0.3)',
+              : '2px solid rgba(148, 163, 184, 0.4)',
             '&:hover': {
               background: mode === 'dark'
                 ? 'rgba(99, 102, 241, 0.1)'
-                : 'rgba(0, 122, 255, 0.1)',
+                : 'rgba(226, 232, 240, 0.6)',
             },
           },
         },
@@ -394,18 +394,51 @@ export const createAppTheme = (mode) => createTheme({
     MuiTableRow: {
       styleOverrides: {
         root: {
+          background: mode === 'dark'
+            ? 'transparent'
+            : '#ffffff !important',
+          borderBottom: mode === 'dark'
+            ? '1px solid rgba(84, 84, 88, 0.3)'
+            : '1px solid rgba(226, 232, 240, 0.5)',
           '&:nth-of-type(odd)': {
             background: mode === 'dark'
               ? 'rgba(99, 102, 241, 0.05)'
-              : 'rgba(0, 122, 255, 0.05)',
+              : '#ffffff !important',
+          },
+          '&:nth-of-type(even)': {
+            background: mode === 'dark'
+              ? 'transparent'
+              : '#ffffff !important',
           },
           '&:hover': {
             background: mode === 'dark'
               ? 'rgba(99, 102, 241, 0.1)'
-              : 'rgba(0, 122, 255, 0.1)',
-            transform: 'scale(1.005)',
+              : 'rgba(59, 130, 246, 0.08) !important',
+            transform: 'scale(1.002)',
             transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            boxShadow: mode === 'dark'
+              ? '0 2px 8px rgba(99, 102, 241, 0.2)'
+              : '0 2px 8px rgba(59, 130, 246, 0.1)',
           },
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          color: mode === 'dark' ? '#ffffff' : '#1e293b',
+          borderBottom: mode === 'dark'
+            ? '1px solid rgba(84, 84, 88, 0.4)'
+            : '1px solid rgba(226, 232, 240, 0.6)',
+          fontSize: '0.95rem',
+          fontWeight: 500,
+          letterSpacing: '-0.003em',
+          padding: '16px',
+        },
+        head: {
+          fontWeight: 700,
+          fontSize: '1rem',
+          color: mode === 'dark' ? '#ffffff' : '#0f172a',
         },
       },
     },

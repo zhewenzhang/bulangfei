@@ -18,6 +18,7 @@ import History from './components/History';
 import Account from './components/Account';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
 // 创建主题上下文
 const ThemeContext = createContext();
@@ -38,6 +39,7 @@ function MainApp() {
   const [value, setValue] = useState(0);
   const [themeMode, setThemeMode] = useState('dark');
   const { loading } = useAuth();
+  const { t } = useLanguage();
 
   const toggleTheme = () => {
     setThemeMode(prevMode => prevMode === 'dark' ? 'light' : 'dark');
@@ -126,9 +128,9 @@ function MainApp() {
               },
             }}
           >
-            <BottomNavigationAction label="计算" icon={<CalculateIcon />} />
-            <BottomNavigationAction label="购物分析" icon={<HistoryIcon />} />
-            <BottomNavigationAction label="我的" icon={<AccountCircleIcon />} />
+            <BottomNavigationAction label={t('calculate')} icon={<CalculateIcon />} />
+            <BottomNavigationAction label={t('shoppingAnalysis')} icon={<HistoryIcon />} />
+            <BottomNavigationAction label={t('profile')} icon={<AccountCircleIcon />} />
           </BottomNavigation>
         </AppBar>
       </Box>
@@ -141,7 +143,9 @@ function MainApp() {
 function App() {
   return (
     <AuthProvider>
-      <MainApp />
+      <LanguageProvider>
+        <MainApp />
+      </LanguageProvider>
     </AuthProvider>
   );
 }
