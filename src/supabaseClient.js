@@ -24,6 +24,25 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     redirectTo: getRedirectURL(),
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    // 添加网络错误重试机制
+    retryAttempts: 3,
+    retryDelay: 1000
+  },
+  // 添加全局错误处理
+  global: {
+    headers: {
+      'X-Client-Info': 'residual-value-calculator'
+    }
+  },
+  // 数据库连接配置
+  db: {
+    schema: 'public'
+  },
+  // 实时连接配置
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
   }
 });

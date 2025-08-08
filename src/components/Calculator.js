@@ -129,20 +129,59 @@ const Calculator = () => {
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: 4 }}>
+        <Typography 
+          variant="h1" 
+          component="h1"
+          sx={{ 
+            fontSize: { xs: '3rem', sm: '4.5rem', md: '5.5rem' },
+            fontFamily: '"Dancing Script", "Brush Script MT", cursive',
+            fontWeight: 700,
+            mb: 3,
+            mt: 2,
+            textAlign: 'center',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            backgroundSize: '200% 200%',
+            letterSpacing: '0.05em',
+            textShadow: '0 8px 16px rgba(102, 126, 234, 0.3)',
+            filter: 'drop-shadow(0 4px 8px rgba(118, 75, 162, 0.2))',
+            transform: 'rotate(-2deg)',
+            animation: 'fadeInUp 1.5s ease-out, gradientShift 3s ease-in-out infinite',
+            '@keyframes fadeInUp': {
+              '0%': {
+                opacity: 0,
+                transform: 'translateY(50px) rotate(-2deg) scale(0.8)'
+              },
+              '100%': {
+                opacity: 1,
+                transform: 'translateY(0) rotate(-2deg) scale(1)'
+              }
+            },
+            '@keyframes gradientShift': {
+              '0%': {
+                backgroundPosition: '0% 50%'
+              },
+              '50%': {
+                backgroundPosition: '100% 50%'
+              },
+              '100%': {
+                backgroundPosition: '0% 50%'
+              }
+            },
+            '&:hover': {
+              transform: 'rotate(0deg) scale(1.05)',
+              transition: 'all 0.3s ease-in-out'
+            }
+          }}
+        >
+          Useful
+        </Typography>
+      </Box>
       <Card sx={{ mb: 4 }}>
         <CardHeader 
-          title={
-            <Typography variant="h4" component="h1" sx={{ 
-              textAlign: 'center',
-              background: 'linear-gradient(45deg, #6366f1, #ec4899)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontWeight: 700,
-              mb: 1
-            }}>
-              用的明明白白
-            </Typography>
-          }
           subheader={
             <Typography variant="subtitle1" sx={{ 
               textAlign: 'center', 

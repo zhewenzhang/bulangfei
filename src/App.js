@@ -8,6 +8,9 @@ import {
   BottomNavigationAction,
   Box,
   CircularProgress,
+  Alert,
+  Snackbar,
+  Button,
 } from '@mui/material';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import HistoryIcon from '@mui/icons-material/History';
@@ -38,11 +41,30 @@ export const useTheme = () => {
 function MainApp() {
   const [value, setValue] = useState(0);
   const [themeMode, setThemeMode] = useState('dark');
-  const { loading } = useAuth();
+  const { loading, networkError, retryConnection, retryCount } = useAuth();
   const { t } = useLanguage();
+  const [showNetworkAlert, setShowNetworkAlert] = useState(false);
 
   const toggleTheme = () => {
     setThemeMode(prevMode => prevMode === 'dark' ? 'light' : 'dark');
+  };
+
+  // 监听网络错误状态
+  React.useEffect(() => {
+    if (networkError) {
+      setShowNetworkAlert(true);
+    }
+  }, [networkError]);
+
+  // 处理网络错误提示关闭
+  const handleNetworkAlertClose = () => {
+    setShowNetworkAlert(false);
+  };
+
+  // 手动重试连接
+  const handleRetryConnection = () => {
+    retryConnection();
+    setShowNetworkAlert(false);
   };
 
   const theme = createAppTheme(themeMode);
@@ -133,6 +155,32 @@ function MainApp() {
             <BottomNavigationAction label={t('profile')} icon={<AccountCircleIcon />} />
           </BottomNavigation>
         </AppBar>
+        
+        {/* 网络错误提示 */}
+        <Snackbar
+          open={showNetworkAlert}
+          autoHideDuration={6000}
+          onClose={handleNetworkAlertClose}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={handleNetworkAlertClose}
+            severity="warning"
+            sx={{ width: '100%' }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={handleRetryConnection}
+                disabled={retryCount >= 3}
+              >
+                {retryCount >= 3 ? '重试次数已达上限' : '重试连接'}
+              </Button>
+            }
+          >
+            {networkError || 'Supabase连接出现问题，可能是网络变化导致的。'}
+          </Alert>
+        </Snackbar>
       </Box>
     </ThemeProvider>
     </ThemeContext.Provider>
