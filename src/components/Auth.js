@@ -5,10 +5,12 @@ import { supabase } from '../supabaseClient';
 import { Box, Paper, IconButton, Container, useTheme as useMuiTheme, useMediaQuery } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '../App';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const AuthComponent = ({ onClose, isDialog = false }) => {
   const muiTheme = useMuiTheme();
   const { themeMode } = useTheme();
+  const { t } = useLanguage();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(muiTheme.breakpoints.down('md'));
   const isDark = themeMode === 'dark';
@@ -22,6 +24,36 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
 
     return () => subscription.unsubscribe();
   }, [onClose]);
+
+  // 动态localization配置
+  const localizationConfig = {
+    variables: {
+      sign_in: {
+        email_label: t('emailLabel'),
+        password_label: t('passwordLabel'),
+        button_label: t('signInButton'),
+        loading_button_label: t('signInLoading'),
+        social_provider_text: t('socialProviderText'),
+        link_text: t('signInLinkText'),
+      },
+      sign_up: {
+        email_label: t('emailLabel'),
+        password_label: t('passwordLabel'),
+        button_label: t('signUpButton'),
+        loading_button_label: t('signUpLoading'),
+        social_provider_text: t('socialProviderSignUpText'),
+        link_text: t('signUpLinkText'),
+        confirmation_text: t('signUpConfirmationText'),
+      },
+      forgotten_password: {
+        email_label: t('emailLabel'),
+        button_label: t('forgotPasswordButton'),
+        loading_button_label: t('forgotPasswordLoading'),
+        link_text: t('forgotPasswordLinkText'),
+        confirmation_text: t('forgotPasswordConfirmationText'),
+      },
+    },
+  };
 
   const isDialogMode = isDialog || onClose;
 
@@ -414,34 +446,7 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
                   },
                 },
               }}
-                localization={{
-                  variables: {
-                    sign_in: {
-                      email_label: '邮箱地址',
-                      password_label: '密码',
-                      button_label: '登录',
-                      loading_button_label: '登录中...',
-                      social_provider_text: '使用{{provider}}登录',
-                      link_text: '已有账户？点击登录',
-                    },
-                    sign_up: {
-                      email_label: '邮箱地址',
-                      password_label: '密码',
-                      button_label: '注册',
-                      loading_button_label: '注册中...',
-                      social_provider_text: '使用{{provider}}注册',
-                      link_text: '没有账户？点击注册',
-                      confirmation_text: '请检查您的邮箱并点击确认链接',
-                    },
-                    forgotten_password: {
-                      email_label: '邮箱地址',
-                      button_label: '发送重置链接',
-                      loading_button_label: '发送中...',
-                      link_text: '忘记密码？',
-                      confirmation_text: '请检查您的邮箱获取密码重置链接',
-                    },
-                  },
-                }}
+                localization={localizationConfig}
                 providers={['google']}
               />
             </Box>
@@ -560,34 +565,7 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
                   },
                 },
               }}
-              localization={{
-                variables: {
-                  sign_in: {
-                    email_label: '邮箱地址',
-                    password_label: '密码',
-                    button_label: '登录',
-                    loading_button_label: '登录中...',
-                    social_provider_text: '使用{{provider}}登录',
-                    link_text: '已有账户？点击登录',
-                  },
-                  sign_up: {
-                    email_label: '邮箱地址',
-                    password_label: '密码',
-                    button_label: '注册',
-                    loading_button_label: '注册中...',
-                    social_provider_text: '使用{{provider}}注册',
-                    link_text: '没有账户？点击注册',
-                    confirmation_text: '请检查您的邮箱并点击确认链接',
-                  },
-                  forgotten_password: {
-                    email_label: '邮箱地址',
-                    button_label: '发送重置链接',
-                    loading_button_label: '发送中...',
-                    link_text: '忘记密码？',
-                    confirmation_text: '请检查您的邮箱获取密码重置链接',
-                  },
-                },
-              }}
+              localization={localizationConfig}
               providers={['google']}
             />
            </Box>

@@ -349,8 +349,8 @@ const History = () => {
                 <TableRow>
                   <TableCell colSpan={headCells.length + 1} align="center" sx={{ py: 6 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                      <Typography variant="h6" color="primary.main" sx={{ fontFamily: 'system-ui, -apple-system, sans-serif', mb: 2 }}>请先登录账户</Typography>
-                      <Typography color="text.secondary" sx={{ fontFamily: 'system-ui, -apple-system, sans-serif', mb: 3 }}>登录后即可查看购物分析记录</Typography>
+                      <Typography variant="h6" color="primary.main" sx={{ fontFamily: 'system-ui, -apple-system, sans-serif', mb: 2 }}>{t('pleaseLoginFirst')}</Typography>
+                      <Typography color="text.secondary" sx={{ fontFamily: 'system-ui, -apple-system, sans-serif', mb: 3 }}>{t('loginToViewAnalysis')}</Typography>
                       <Button 
                         variant="contained" 
                         color="primary"
@@ -362,7 +362,7 @@ const History = () => {
                           }
                         }}
                       >
-                        立即登录
+                        {t('loginNow')}
                       </Button>
                     </Box>
                   </TableCell>

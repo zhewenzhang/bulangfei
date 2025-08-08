@@ -105,6 +105,28 @@ const translations = {
     appName: '残值计算器',
     version: 'v1.0.0',
     copyright: '© 2024 残值计算器团队',
+    
+    // 登录页面
+    emailLabel: '邮箱地址',
+    passwordLabel: '密码',
+    signInButton: '登录',
+    signInLoading: '登录中...',
+    signUpButton: '注册',
+    signUpLoading: '注册中...',
+    socialProviderText: '使用{{provider}}登录',
+    socialProviderSignUpText: '使用{{provider}}注册',
+    signInLinkText: '已有账户？点击登录',
+    signUpLinkText: '没有账户？点击注册',
+    forgotPasswordButton: '发送重置链接',
+    forgotPasswordLoading: '发送中...',
+    forgotPasswordLinkText: '忘记密码？',
+    signUpConfirmationText: '请检查您的邮箱并点击确认链接',
+    forgotPasswordConfirmationText: '请检查您的邮箱获取密码重置链接',
+    
+    // 购物分析页面登录提示
+    pleaseLoginFirst: '请先登录账户',
+    loginToViewAnalysis: '登录后即可查看购物分析记录',
+    loginNow: '立即登录',
   },
   
   'zh-TW': {
@@ -208,6 +230,28 @@ const translations = {
     appName: '殘值計算器',
     version: 'v1.0.0',
     copyright: '© 2024 殘值計算器團隊',
+    
+    // 登錄頁面
+    emailLabel: '郵箱地址',
+    passwordLabel: '密碼',
+    signInButton: '登錄',
+    signInLoading: '登錄中...',
+    signUpButton: '註冊',
+    signUpLoading: '註冊中...',
+    socialProviderText: '使用{{provider}}登錄',
+    socialProviderSignUpText: '使用{{provider}}註冊',
+    signInLinkText: '已有賬戶？點擊登錄',
+    signUpLinkText: '沒有賬戶？點擊註冊',
+    forgotPasswordButton: '發送重置鏈接',
+    forgotPasswordLoading: '發送中...',
+    forgotPasswordLinkText: '忘記密碼？',
+    signUpConfirmationText: '請檢查您的郵箱並點擊確認鏈接',
+    forgotPasswordConfirmationText: '請檢查您的郵箱獲取密碼重置鏈接',
+    
+    // 購物分析頁面登錄提示
+    pleaseLoginFirst: '請先登錄賬戶',
+    loginToViewAnalysis: '登錄後即可查看購物分析記錄',
+    loginNow: '立即登錄',
   },
   
   'en': {
@@ -313,6 +357,28 @@ const translations = {
     appName: 'Residual Value Calculator',
     version: 'v1.0.0',
     copyright: '© 2024 Residual Value Calculator Team',
+    
+    // Login page
+    emailLabel: 'Email Address',
+    passwordLabel: 'Password',
+    signInButton: 'Sign In',
+    signInLoading: 'Signing In...',
+    signUpButton: 'Sign Up',
+    signUpLoading: 'Signing Up...',
+    socialProviderText: 'Sign in with {{provider}}',
+    socialProviderSignUpText: 'Sign up with {{provider}}',
+    signInLinkText: 'Already have an account? Sign in',
+    signUpLinkText: 'Don\'t have an account? Sign up',
+    forgotPasswordButton: 'Send Reset Link',
+    forgotPasswordLoading: 'Sending...',
+    forgotPasswordLinkText: 'Forgot your password?',
+    signUpConfirmationText: 'Please check your email and click the confirmation link',
+    forgotPasswordConfirmationText: 'Please check your email for password reset link',
+    
+    // Shopping analysis page login prompt
+    pleaseLoginFirst: 'Please login first',
+    loginToViewAnalysis: 'Login to view shopping analysis records',
+    loginNow: 'Login Now',
   },
   
   'ja': {
@@ -418,6 +484,28 @@ const translations = {
     appName: '残存価値計算機',
     version: 'v1.0.0',
     copyright: '© 2024 残存価値計算機チーム',
+    
+    // ログインページ
+    emailLabel: 'メールアドレス',
+    passwordLabel: 'パスワード',
+    signInButton: 'ログイン',
+    signInLoading: 'ログイン中...',
+    signUpButton: '登録',
+    signUpLoading: '登録中...',
+    socialProviderText: '{{provider}}でログイン',
+    socialProviderSignUpText: '{{provider}}で登録',
+    signInLinkText: 'アカウントをお持ちですか？ログイン',
+    signUpLinkText: 'アカウントをお持ちでない方は登録',
+    forgotPasswordButton: 'リセットリンクを送信',
+    forgotPasswordLoading: '送信中...',
+    forgotPasswordLinkText: 'パスワードを忘れましたか？',
+    signUpConfirmationText: 'メールを確認して確認リンクをクリックしてください',
+    forgotPasswordConfirmationText: 'パスワードリセットリンクのメールを確認してください',
+    
+    // ショッピング分析ページのログインプロンプト
+    pleaseLoginFirst: 'まずログインしてください',
+    loginToViewAnalysis: 'ログインしてショッピング分析記録を表示',
+    loginNow: '今すぐログイン',
   },
 };
 

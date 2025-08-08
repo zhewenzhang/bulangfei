@@ -44,7 +44,7 @@ function Account() {
 
   const languages = [
     { code: 'zh-CN', name: '简体中文', flag: '🇨🇳' },
-    { code: 'zh-TW', name: '繁體中文', flag: '🇹🇼' },
+    { code: 'zh-TW', name: '繁體中文', flag: 'TW' },
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'ja', name: '日本語', flag: '🇯🇵' },
   ];
@@ -349,7 +349,12 @@ function Account() {
                 control={<Radio color="primary" />}
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1 }}>
-                    <Typography variant="h6" sx={{ fontSize: '1.5rem' }}>
+                    <Typography variant="h6" sx={{ 
+                      fontSize: language.flag === 'TW' ? '1rem' : '1.5rem',
+                      fontWeight: language.flag === 'TW' ? 600 : 'normal',
+                      minWidth: '2rem',
+                      textAlign: 'center'
+                    }}>
                       {language.flag}
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
