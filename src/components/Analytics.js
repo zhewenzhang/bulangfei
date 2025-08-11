@@ -1,0 +1,541 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Box,
+  Chip,
+  LinearProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Tabs,
+  Tab,
+  Alert,
+  CircularProgress
+} from '@mui/material';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
+import { supabase } from '../supabaseClient';
+import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+
+function TabPanel({ children, value, index, ...other }) {
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`analytics-tabpanel-${index}`}
+      aria-labelledby={`analytics-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
+
+const Analytics = () => {
+  const { user } = useAuth();
+  const { language } = useLanguage();
+  const [tabValue, setTabValue] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [categoryStats, setCategoryStats] = useState([]);
+  const [totalStats, setTotalStats] = useState({
+    totalItems: 0,
+    totalPurchaseValue: 0,
+    totalCurrentValue: 0,
+    totalDepreciation: 0,
+    avgDepreciationRate: 0
+  });
+  const [recentItems, setRecentItems] = useState([]);
+  const [error, setError] = useState(null);
+
+  const texts = {
+    zh: {
+      title: '购物分析',
+      overview: '总览',
+      categories: '分类统计',
+      trends: '趋势分析',
+      totalItems: '总物品数',
+      totalPurchaseValue: '总购买价值',
+      totalCurrentValue: '总消耗值',
+      totalDepreciation: '使用率',
+      avgDepreciationRate: '平均贬值率',
+      categoryName: '分类',
+      itemCount: '物品数量',
+      purchaseValue: '购买价值',
+      currentValue: '当前价值',
+      depreciation: '贬值金额',
+      depreciationRate: '贬值率',
+      recentItems: '最近添加的物品',
+      itemName: '物品名称',
+      purchasePrice: '购买价格',
+      currentPrice: '每天成本',
+      serviceDuration: '使用时长',
+      addedDate: '添加日期',
+      noData: '暂无数据',
+      loading: '加载中...',
+      error: '加载数据时出错',
+      days: '天',
+      yuan: '元'
+    },
+    en: {
+      title: 'Shopping Analytics',
+      overview: 'Overview',
+      categories: 'Category Statistics',
+      trends: 'Trend Analysis',
+      totalItems: 'Total Items',
+      totalPurchaseValue: 'Total Purchase Value',
+      totalCurrentValue: 'Total Consumption Value',
+      totalDepreciation: 'Usage Rate',
+      avgDepreciationRate: 'Avg Depreciation Rate',
+      categoryName: 'Category',
+      itemCount: 'Item Count',
+      purchaseValue: 'Purchase Value',
+      currentValue: 'Current Value',
+      depreciation: 'Depreciation',
+      depreciationRate: 'Depreciation Rate',
+      recentItems: 'Recently Added Items',
+      itemName: 'Item Name',
+      purchasePrice: 'Purchase Price',
+      currentPrice: 'Daily Cost',
+      serviceDuration: 'Service Duration',
+      addedDate: 'Added Date',
+      noData: 'No data available',
+      loading: 'Loading...',
+      error: 'Error loading data',
+      days: 'days',
+      yuan: '¥'
+    }
+  };
+
+  const t = texts[language] || texts.zh;
+
+  useEffect(() => {
+    if (user) {
+      fetchAnalyticsData();
+    }
+  }, [user]);
+
+  const fetchAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // 获取用户分类统计
+      const { data: categoryData, error: categoryError } = await supabase
+        .from('user_category_statistics')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (categoryError) throw categoryError;
+
+      // 获取最近添加的物品
+      const { data: recentData, error: recentError } = await supabase
+        .from('calculations')
+        .select(`
+          *,
+          categories(name, icon, color)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      // 获取所有计算记录用于计算消耗值和使用率
+      const { data: allCalculations, error: allCalcError } = await supabase
+        .from('calculations')
+        .select('category_id, target, service_duration, purchase_price')
+        .eq('user_id', user.id);
+
+      if (allCalcError) throw allCalcError;
+
+      if (recentError) throw recentError;
+
+      // 重新计算每个分类的总消耗值（目标消耗 × 使用天数）
+      const categoryConsumption = {};
+      if (allCalculations && allCalculations.length > 0) {
+        allCalculations.forEach(calc => {
+          if (calc.category_id) {
+            if (!categoryConsumption[calc.category_id]) {
+              categoryConsumption[calc.category_id] = 0;
+            }
+            const targetDailyCost = parseFloat(calc.target || 0);
+            const serviceDuration = calc.service_duration || 0;
+            categoryConsumption[calc.category_id] += targetDailyCost * serviceDuration;
+          }
+        });
+      }
+
+      // 更新分类统计数据，替换total_current_value为重新计算的消耗值，并重新计算贬值金额
+      const updatedCategoryStats = (categoryData || []).map(category => {
+        const totalConsumption = categoryConsumption[category.category_id] || 0;
+        const purchaseValue = parseFloat(category.total_purchase_value || 0);
+        const depreciation = purchaseValue - totalConsumption; // 购买价格 - 当前价值
+        
+        return {
+          ...category,
+          total_current_value: totalConsumption,
+          total_depreciation: depreciation
+        };
+      });
+
+      setCategoryStats(updatedCategoryStats);
+      setRecentItems(recentData || []);
+
+      // 计算总体统计
+      const totalItems = updatedCategoryStats?.reduce((sum, cat) => sum + cat.item_count, 0) || 0;
+      const totalPurchaseValue = updatedCategoryStats?.reduce((sum, cat) => sum + parseFloat(cat.total_purchase_value || 0), 0) || 0;
+      
+      // 计算总消耗值（使用更新后的分类数据）
+      const totalTargetConsumption = updatedCategoryStats?.reduce((sum, cat) => sum + parseFloat(cat.total_current_value || 0), 0) || 0;
+      
+      // 计算总贬值金额（购买价格 - 当前价值）
+      const totalDepreciationAmount = totalPurchaseValue - totalTargetConsumption;
+      
+      // 计算使用率（耗用值 / 总购买价值）
+      const usageRate = totalPurchaseValue > 0 ? (totalTargetConsumption / totalPurchaseValue * 100) : 0;
+      const avgDepreciationRate = categoryData?.reduce((sum, cat) => sum + parseFloat(cat.depreciation_rate || 0), 0) / (categoryData?.length || 1) || 0;
+
+      setTotalStats({
+        totalItems,
+        totalPurchaseValue,
+        totalCurrentValue: totalTargetConsumption,
+        totalDepreciation: usageRate,
+        avgDepreciationRate
+      });
+
+    } catch (error) {
+      console.error('Error fetching analytics data:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
+  const formatCurrency = (value) => {
+    return `${Math.round(parseFloat(value || 0)).toLocaleString()}${t.yuan}`;
+  };
+
+  const formatPercentage = (value) => {
+    return `${Math.round(parseFloat(value || 0))}%`;
+  };
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF7C7C', '#8DD1E1'];
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+        <Typography variant="h6" sx={{ ml: 2 }}>{t.loading}</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ m: 2 }}>
+        {t.error}: {error}
+      </Alert>
+    );
+  }
+
+  return (
+    <Box sx={{ width: '100%' }}>
+      <Typography variant="h4" gutterBottom>
+        {t.title}
+      </Typography>
+
+      <Tabs value={tabValue} onChange={handleTabChange} aria-label="analytics tabs">
+        <Tab label={t.overview} />
+        <Tab label={t.categories} />
+        <Tab label={t.trends} />
+      </Tabs>
+
+      <TabPanel value={tabValue} index={0}>
+        {/* 总览统计卡片 */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  {t.totalItems}
+                </Typography>
+                <Typography variant="h4">
+                  {totalStats.totalItems}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  {t.totalPurchaseValue}
+                </Typography>
+                <Typography variant="h4">
+                  {formatCurrency(totalStats.totalPurchaseValue)}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  {t.totalCurrentValue}
+                </Typography>
+                <Typography variant="h4">
+                  {formatCurrency(totalStats.totalCurrentValue)}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  {t.totalDepreciation}
+                </Typography>
+                <Typography variant="h4" color="primary">
+                  {formatPercentage(totalStats.totalDepreciation)}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  {t.avgDepreciationRate}
+                </Typography>
+                <Typography variant="h4" color="error">
+                  {formatPercentage(totalStats.avgDepreciationRate)}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* 最近添加的物品 */}
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              {t.recentItems}
+            </Typography>
+            {recentItems.length > 0 ? (
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>{t.itemName}</TableCell>
+                      <TableCell>{t.categoryName}</TableCell>
+                      <TableCell align="right">{t.purchasePrice}</TableCell>
+                      <TableCell align="right">{t.currentPrice}</TableCell>
+                      <TableCell align="right">{t.serviceDuration}</TableCell>
+                      <TableCell align="right">{t.addedDate}</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {recentItems.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{item.name}</TableCell>
+                        <TableCell>
+                          {item.categories && (
+                            <Chip
+                              label={`${item.categories.icon} ${item.categories.name}`}
+                              size="small"
+                              style={{ backgroundColor: item.categories.color, color: 'white' }}
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell align="right">{formatCurrency(item.purchase_price)}</TableCell>
+                        <TableCell align="right">{formatCurrency(item.actual)}</TableCell>
+                        <TableCell align="right">{item.service_duration} {t.days}</TableCell>
+                        <TableCell align="right">
+                          {new Date(item.created_at).toLocaleDateString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <Typography color="textSecondary">{t.noData}</Typography>
+            )}
+          </CardContent>
+        </Card>
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={1}>
+        <Grid container spacing={3}>
+          {/* 分类饼图 */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  {t.categories} - {t.itemCount}
+                </Typography>
+                {categoryStats.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={categoryStats}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ category_name, item_count }) => `${category_name}: ${item_count}`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="item_count"
+                      >
+                        {categoryStats.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <Typography color="textSecondary">{t.noData}</Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* 分类价值柱状图 */}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  {t.categories} - {t.purchaseValue}
+                </Typography>
+                {categoryStats.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={categoryStats}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="category_name" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => formatCurrency(value)} />
+                      <Legend />
+                      <Bar dataKey="total_purchase_value" fill="#8884d8" name={t.purchaseValue} />
+                      <Bar dataKey="total_current_value" fill="#82ca9d" name={t.currentValue} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <Typography color="textSecondary">{t.noData}</Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* 分类详细表格 */}
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  {t.categories} - 详细统计
+                </Typography>
+                {categoryStats.length > 0 ? (
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>{t.categoryName}</TableCell>
+                          <TableCell align="right">{t.itemCount}</TableCell>
+                          <TableCell align="right">{t.purchaseValue}</TableCell>
+                          <TableCell align="right">{t.currentValue}</TableCell>
+                          <TableCell align="right">{t.depreciation}</TableCell>
+                          <TableCell align="right">{t.depreciationRate}</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {categoryStats.map((category) => (
+                          <TableRow key={category.category_id}>
+                            <TableCell>
+                              <Chip
+                                label={`${category.icon} ${category.category_name}`}
+                                size="small"
+                                style={{ backgroundColor: category.color, color: 'white' }}
+                              />
+                            </TableCell>
+                            <TableCell align="right">{category.item_count}</TableCell>
+                            <TableCell align="right">{formatCurrency(category.total_purchase_value)}</TableCell>
+                            <TableCell align="right">{formatCurrency(category.total_current_value)}</TableCell>
+                            <TableCell align="right">{formatCurrency(category.total_depreciation)}</TableCell>
+                            <TableCell align="right">
+                              <Box display="flex" alignItems="center">
+                                <Box width="100%" mr={1}>
+                                  <LinearProgress
+                                    variant="determinate"
+                                    value={Math.min(category.depreciation_rate, 100)}
+                                    color={category.depreciation_rate > 50 ? "error" : "primary"}
+                                  />
+                                </Box>
+                                <Box minWidth={35}>
+                                  <Typography variant="body2" color="textSecondary">
+                                    {formatPercentage(category.depreciation_rate)}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Typography color="textSecondary">{t.noData}</Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={2}>
+        <Typography variant="h6" gutterBottom>
+          {t.trends}
+        </Typography>
+        <Alert severity="info">
+          趋势分析功能正在开发中，敬请期待！
+        </Alert>
+      </TabPanel>
+      
+      {/* 公式说明备注 */}
+      <Box sx={{ mt: 4, p: 2, borderTop: '1px solid #e0e0e0' }}>
+        <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.75rem', lineHeight: 1.4 }}>
+          <strong>计算公式说明：</strong><br/>
+          • 总消耗值 = Σ(使用时长 × 目标日耗)<br/>
+          • 使用率 = 总消耗值 ÷ 总购买价值 × 100%<br/>
+          • 贬值率 = (购买价格 - 当前价格) ÷ 购买价格 × 100%
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
+
+export default Analytics;

@@ -194,7 +194,7 @@ const History = () => {
                     fontWeight: 700,
                     fontFamily: 'system-ui, -apple-system, sans-serif'
                   }}>
-                    ¥{rows.reduce((sum, row) => sum + (Number(row.actual) * Number(row.service_duration)), 0).toFixed(2)}
+                    {rows.reduce((sum, row) => sum + (Number(row.actual) * Number(row.service_duration)), 0).toFixed(2)}元
                   </Typography>
                 </Paper>
               </Grid>
@@ -419,7 +419,7 @@ const History = () => {
                         width: '22%',
                         padding: { xs: '8px 4px', sm: '12px 8px', md: '16px 12px' }
                       }}>
-                        ¥{target.toFixed(2)}
+                        {target.toFixed(2)}元
                       </TableCell>
                       <TableCell align="right" sx={{ 
                         fontWeight: 600,
@@ -429,7 +429,7 @@ const History = () => {
                         width: '22%',
                         padding: { xs: '8px 4px', sm: '12px 8px', md: '16px 12px' }
                       }}>
-                        ¥{actual.toFixed(2)}
+                        {actual.toFixed(2)}元
                       </TableCell>
                       <TableCell align="right" sx={{ 
                         fontWeight: 600,
@@ -613,7 +613,7 @@ const History = () => {
                        fontWeight: 700,
                        fontFamily: 'system-ui, -apple-system, sans-serif'
                      }}>
-                       ¥{Number(selectedRow.target).toFixed(2)}
+                       {Number(selectedRow.target).toFixed(2)}元
                      </Typography>
                    </Paper>
                  </Grid>
@@ -644,7 +644,7 @@ const History = () => {
                        fontWeight: 700,
                        fontFamily: 'system-ui, -apple-system, sans-serif'
                      }}>
-                       ¥{Number(selectedRow.actual).toFixed(2)}
+                       {Number(selectedRow.actual).toFixed(2)}元
                      </Typography>
                    </Paper>
                  </Grid>
@@ -675,7 +675,7 @@ const History = () => {
                        fontWeight: 700,
                        fontFamily: 'system-ui, -apple-system, sans-serif'
                      }}>
-                       ¥{selectedRow.purchase_price ? Number(selectedRow.purchase_price).toFixed(2) : t('notRecorded')}
+                       {selectedRow.purchase_price ? Number(selectedRow.purchase_price).toFixed(2) + '元' : t('notRecorded')}
                      </Typography>
                    </Paper>
                  </Grid>
@@ -706,7 +706,7 @@ const History = () => {
                        fontWeight: 700,
                        fontFamily: 'system-ui, -apple-system, sans-serif'
                      }}>
-                       ¥{(Number(selectedRow.target) * Number(selectedRow.service_duration)).toFixed(2)}
+                       {(Number(selectedRow.target) * Number(selectedRow.service_duration)).toFixed(2)}元
                      </Typography>
                    </Paper>
                  </Grid>

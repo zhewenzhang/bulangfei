@@ -10,15 +10,20 @@ import {
   CircularProgress,
   Alert,
   Snackbar,
-  Button,
+  Button
 } from '@mui/material';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import HistoryIcon from '@mui/icons-material/History';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AnalyticsIcon from '@mui/icons-material/Analytics';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { createAppTheme } from './theme';
 import Calculator from './components/Calculator';
 import History from './components/History';
 import Account from './components/Account';
+import Analytics from './components/Analytics';
+import Admin from './components/Admin';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -39,7 +44,6 @@ export const useTheme = () => {
 
 // 主应用组件（需要认证的部分）
 function MainApp() {
-  const [value, setValue] = useState(0);
   const [themeMode, setThemeMode] = useState('dark');
   const { loading, networkError, retryConnection, retryCount } = useAuth();
   const { t } = useLanguage();
@@ -89,96 +93,122 @@ function MainApp() {
     );
   }
 
-  // 不管用户是否登录，都显示主应用界面
-
-  const renderContent = () => {
-    switch (value) {
-      case 0:
-        return <Calculator />;
-      case 1:
-        return <History />;
-      case 2:
-        return <Account />;
-      default:
-        return <Calculator />;
-    }
-  };
-
-  // 用户已登录，显示主应用
   return (
     <ThemeContext.Provider value={{ themeMode, toggleTheme }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Container component="main" sx={{ flexGrow: 1, py: 3, pb: 10 }}>
-          {renderContent()}
-        </Container>
-
-        <AppBar position="fixed" color="primary" sx={{ 
-           top: 'auto', 
-           bottom: 0,
-           background: themeMode === 'dark'
-             ? 'rgba(28, 28, 30, 0.95)'
-             : 'rgba(255, 255, 255, 0.95)',
-           backdropFilter: 'blur(20px)',
-           borderTop: themeMode === 'dark'
-             ? '1px solid rgba(84, 84, 88, 0.6)'
-             : '1px solid rgba(60, 60, 67, 0.29)'
-         }}>
-          <BottomNavigation
-            showLabels
-            value={value}
-            onChange={(event, newValue) => {
-              setValue(newValue);
-            }}
-            sx={{
-              background: 'transparent',
-              '& .MuiBottomNavigationAction-root': {
-                color: 'text.secondary',
-                fontWeight: 600,
-                '&.Mui-selected': {
-                  color: 'primary.main',
-                  background: 'rgba(99, 102, 241, 0.1)',
-                  borderRadius: 2
-                },
-
-              },
-            }}
-          >
-            <BottomNavigationAction label={t('calculate')} icon={<CalculateIcon />} />
-            <BottomNavigationAction label={t('shoppingAnalysis')} icon={<HistoryIcon />} />
-            <BottomNavigationAction label={t('profile')} icon={<AccountCircleIcon />} />
-          </BottomNavigation>
-        </AppBar>
-        
-        {/* 网络错误提示 */}
-        <Snackbar
-          open={showNetworkAlert}
-          autoHideDuration={6000}
-          onClose={handleNetworkAlertClose}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        >
-          <Alert
-            onClose={handleNetworkAlertClose}
-            severity="warning"
-            sx={{ width: '100%' }}
-            action={
-              <Button
-                color="inherit"
-                size="small"
-                onClick={handleRetryConnection}
-                disabled={retryCount >= 3}
-              >
-                {retryCount >= 3 ? '重试次数已达上限' : '重试连接'}
-              </Button>
-            }
-          >
-            {networkError || 'Supabase连接出现问题，可能是网络变化导致的。'}
-          </Alert>
-        </Snackbar>
-      </Box>
-    </ThemeProvider>
+        <MainContent 
+          themeMode={themeMode}
+          showNetworkAlert={showNetworkAlert}
+          handleNetworkAlertClose={handleNetworkAlertClose}
+          handleRetryConnection={handleRetryConnection}
+          retryCount={retryCount}
+          networkError={networkError}
+        />
+      </ThemeProvider>
     </ThemeContext.Provider>
+  );
+}
+
+function MainContent({ themeMode, showNetworkAlert, handleNetworkAlertClose, handleRetryConnection, retryCount, networkError }) {
+  const { t } = useLanguage();
+  const [value, setValue] = useState(0);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 根据当前路径设置底部导航的值
+  React.useEffect(() => {
+    const path = location.pathname;
+    if (path === '/') setValue(0);
+    else if (path === '/history') setValue(1);
+    else if (path === '/analytics') setValue(2);
+    else if (path === '/account') setValue(3);
+  }, [location.pathname]);
+
+  const handleNavigationChange = (event, newValue) => {
+    setValue(newValue);
+    const paths = ['/', '/history', '/analytics', '/account'];
+    navigate(paths[newValue]);
+  };
+
+
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Container component="main" sx={{ flexGrow: 1, py: 3, pb: 10 }}>
+        <Routes>
+          <Route path="/" element={<Calculator />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/admin" element={<Admin />} />
+        </Routes>
+      </Container>
+
+      <AppBar position="fixed" color="primary" sx={{ 
+         top: 'auto', 
+         bottom: 0,
+         background: themeMode === 'dark'
+           ? 'rgba(28, 28, 30, 0.95)'
+           : 'rgba(255, 255, 255, 0.95)',
+         backdropFilter: 'blur(20px)',
+         borderTop: themeMode === 'dark'
+           ? '1px solid rgba(84, 84, 88, 0.6)'
+           : '1px solid rgba(60, 60, 67, 0.29)'
+       }}>
+        <BottomNavigation
+          showLabels
+          value={value}
+          onChange={handleNavigationChange}
+          sx={{
+            background: 'transparent',
+            '& .MuiBottomNavigationAction-root': {
+              color: 'text.secondary',
+              fontWeight: 600,
+              '&.Mui-selected': {
+                color: 'primary.main',
+                background: 'rgba(99, 102, 241, 0.1)',
+                borderRadius: 2
+              },
+
+            },
+          }}
+        >
+          <BottomNavigationAction label={t('calculate')} icon={<CalculateIcon />} />
+          <BottomNavigationAction label={t('shoppingAnalysis')} icon={<HistoryIcon />} />
+          <BottomNavigationAction label="分析" icon={<AnalyticsIcon />} />
+          <BottomNavigationAction label={t('profile')} icon={<AccountCircleIcon />} />
+        </BottomNavigation>
+      </AppBar>
+
+
+      
+      {/* 网络错误提示 */}
+      <Snackbar
+        open={showNetworkAlert}
+        autoHideDuration={6000}
+        onClose={handleNetworkAlertClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleNetworkAlertClose}
+          severity="warning"
+          sx={{ width: '100%' }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={handleRetryConnection}
+              disabled={retryCount >= 3}
+            >
+              {retryCount >= 3 ? '重试次数已达上限' : '重试连接'}
+            </Button>
+          }
+        >
+          {networkError || 'Supabase连接出现问题，可能是网络变化导致的。'}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 }
 
@@ -187,7 +217,12 @@ function App() {
   return (
     <AuthProvider>
       <LanguageProvider>
-        <MainApp />
+        <Router>
+          <Routes>
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/*" element={<MainApp />} />
+          </Routes>
+        </Router>
       </LanguageProvider>
     </AuthProvider>
   );

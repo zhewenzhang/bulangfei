@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import aiClassificationService from '../services/aiClassificationService';
 import AuthComponent from './Auth';
+
 import { Dialog, DialogContent } from '@mui/material';
 import {
   Box,
@@ -17,7 +19,8 @@ import {
   Card,
   CardContent,
   CardHeader,
-
+  Chip,
+  Autocomplete,
   CircularProgress,
   Snackbar,
   Alert,
@@ -33,13 +36,135 @@ const Calculator = () => {
     purchaseDate: new Date().toISOString().split('T')[0],
     status: 'In Use',
     soldPrice: '',
+    categoryId: null,
   });
+
+  const [categories, setCategories] = useState([]);
+  const [suggestedCategories, setSuggestedCategories] = useState([]);
+  const [classifying, setClassifying] = useState(false);
 
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
+
+  // 加载分类数据
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  // 物品分类函数（使用AI分类服务）
+  const classifyItem = async (itemName, userId) => {
+    if (!itemName.trim() || !userId) return null;
+    
+    try {
+      setClassifying(true);
+      const result = await aiClassificationService.classifyItem(itemName, userId);
+      
+      if (result.success) {
+        return {
+          success: true,
+          suggestedCategory: result.suggestedCategory,
+          confidence: result.confidence,
+          method: result.method,
+          matchedKeyword: result.matchedKeyword,
+          reasoning: result.reasoning
+        };
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error in item classification:', error);
+      return {
+        success: false,
+        confidence: 0,
+        suggestedCategory: null,
+        error: error.message
+      };
+    } finally {
+      setClassifying(false);
+    }
+  };
+
+  // AI分类函数（仅在用户完成输入时调用）
+  const performClassification = useCallback(async (itemName, userId) => {
+    if (!itemName.trim() || itemName.trim().length < 2 || !userId) {
+      setSuggestedCategories([]);
+      return;
+    }
+    
+    console.log('开始执行AI分类，物品名称:', itemName);
+    const result = await classifyItem(itemName, userId);
+    console.log('分类结果:', result);
+    
+    if (result && result.success && result.suggestedCategory) {
+      console.log('设置分类建议:', result.suggestedCategory);
+      setSuggestedCategories([result]);
+      
+      // 如果置信度高于0.7，自动选择分类
+      if (result.confidence > 0.7) {
+        setFormState(prev => ({ ...prev, categoryId: result.suggestedCategory.id }));
+      }
+    } else {
+      console.log('分类失败或无结果:', result);
+      setSuggestedCategories([]);
+    }
+  }, []);
+
+  // 处理物品名称变化（仅更新状态，不触发分类）
+  const handleNameChange = (event) => {
+    const { value } = event.target;
+    setFormState(prev => ({ ...prev, name: value }));
+    
+    // 如果输入内容太短，清除建议
+    if (value.trim().length < 2) {
+      setSuggestedCategories([]);
+    }
+  };
+  
+  // 处理输入框失去焦点时的AI分析
+  const handleNameBlur = (event) => {
+    const { value } = event.target;
+    console.log('handleNameBlur 触发，输入值:', value, '用户:', user);
+    if (value.trim().length >= 2 && user) {
+      console.log('满足条件，开始AI分析');
+      performClassification(value, user.id);
+    } else {
+      console.log('不满足条件：输入长度:', value.trim().length, '用户存在:', !!user);
+    }
+  };
+  
+  // 处理回车键触发AI分析
+  const handleNameKeyPress = (event) => {
+    console.log('handleNameKeyPress 触发，按键:', event.key);
+    if (event.key === 'Enter') {
+      const { value } = event.target;
+      console.log('回车键触发，输入值:', value, '用户:', user);
+      if (value.trim().length >= 2 && user) {
+        console.log('满足条件，开始AI分析');
+        performClassification(value, user.id);
+      } else {
+        console.log('不满足条件：输入长度:', value.trim().length, '用户存在:', !!user);
+      }
+    }
+  };
+
+
 
 
   const handleChange = (event) => {
@@ -99,12 +224,29 @@ const Calculator = () => {
     }
 
     setSaving(true);
+    
+    // 确定分类方法
+    let classificationMethod = 'manual';
+    let confidenceScore = null;
+    
+    if (formState.categoryId) {
+      const suggestion = suggestedCategories.find(s => s.suggestedCategory && s.suggestedCategory.id === formState.categoryId);
+      if (suggestion) {
+        classificationMethod = suggestion.method;
+        confidenceScore = suggestion.confidence; // 使用原始置信度值
+      }
+    }
+    
     const recordToSave = { 
       name: results.name, 
       target: results.targetDailyCost, 
       actual: results.actualDailyCost, 
       service_duration: results.daysInService,
       purchase_price: formState.purchasePrice ? parseFloat(formState.purchasePrice) : null,
+      category_id: formState.categoryId,
+      classification_method: classificationMethod,
+      confidence_score: confidenceScore,
+      suggested_categories: suggestedCategories.length > 0 ? JSON.stringify(suggestedCategories) : null,
       user_id: user.id
     };
 
@@ -115,6 +257,18 @@ const Calculator = () => {
       setNotification({ open: true, message: `保存数据时出错: ${error.message}`, severity: 'error' });
     } else {
       setNotification({ open: true, message: '计算结果保存成功！', severity: 'success' });
+      // 清空表单
+      setFormState({
+        name: '',
+        purchasePrice: '',
+        targetDailyCost: '',
+        purchaseDate: new Date().toISOString().split('T')[0],
+        status: 'In Use',
+        soldPrice: '',
+        categoryId: null,
+      });
+      setResults(null);
+      setSuggestedCategories([]);
     }
     setSaving(false);
   };
@@ -179,9 +333,78 @@ const Calculator = () => {
                 label={t('itemName')} 
                 name="name" 
                 value={formState.name} 
-                onChange={handleChange}
+                onChange={handleNameChange}
+                onBlur={handleNameBlur}
+                onKeyPress={handleNameKeyPress}
                 sx={{ '& .MuiInputLabel-root': { fontSize: '1.1rem' } }}
               />
+            </Grid>
+            
+            {/* 分类选择器 */}
+            <Grid item xs={12}>
+              <FormControl fullWidth variant="filled">
+                <InputLabel sx={{ fontSize: '1.1rem' }}>物品分类</InputLabel>
+                <Select 
+                  name="categoryId" 
+                  value={formState.categoryId || ''} 
+                  onChange={handleChange}
+                  label="物品分类"
+                >
+                  <MenuItem value="">请选择分类</MenuItem>
+                  {categories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <span>{category.icon}</span>
+                        <span>{category.name}</span>
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              
+              {/* 显示分类建议 */}
+              {suggestedCategories.length > 0 && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="caption" color="textSecondary">
+                    建议分类：
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
+                    {suggestedCategories.map((suggestion, index) => {
+                      // 安全检查：确保suggestion和suggestion.suggestedCategory存在
+                      if (!suggestion || !suggestion.suggestedCategory) {
+                        console.warn('Invalid suggestion data:', suggestion);
+                        return null;
+                      }
+                      
+                      const category = suggestion.suggestedCategory;
+                      return (
+                        <Chip
+                          key={index}
+                          label={`${category.icon || '📦'} ${category.name || '未知分类'}`}
+                          size="small"
+                          variant={formState.categoryId === category.id ? "filled" : "outlined"}
+                          style={{ 
+                            backgroundColor: formState.categoryId === category.id ? (category.color || '#6b7280') : 'transparent',
+                            borderColor: category.color || '#6b7280',
+                            color: formState.categoryId === category.id ? 'white' : (category.color || '#6b7280')
+                          }}
+                          onClick={() => setFormState(prev => ({ ...prev, categoryId: category.id }))}
+                          clickable
+                        />
+                      );
+                    }).filter(Boolean)}
+                  </Box>
+                </Box>
+              )}
+              
+              {classifying && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                  <CircularProgress size={16} />
+                  <Typography variant="caption" color="textSecondary">
+                    正在分析分类...
+                  </Typography>
+                </Box>
+              )}
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField 
@@ -335,7 +558,7 @@ const Calculator = () => {
                     }}>
                       <Typography variant="h6" color="primary.main" sx={{ mb: 1 }}>{t('actualDailyCost')}</Typography>
                       <Typography variant="h3" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                        ¥{results.actualDailyCost}
+                        {results.actualDailyCost}元
                       </Typography>
                       <Typography variant="body2" color="text.secondary">{t('dailyCost')}</Typography>
                     </Card>
@@ -351,7 +574,7 @@ const Calculator = () => {
                     }}>
                       <Typography variant="h6" color="warning.main" sx={{ mb: 1 }}>{t('targetDailyCost')}</Typography>
                       <Typography variant="h3" sx={{ fontWeight: 700, color: 'warning.main' }}>
-                        ¥{results.targetDailyCost}
+                        {results.targetDailyCost}元
                       </Typography>
                       <Typography variant="body2" color="text.secondary">{t('targetCost')}</Typography>
                     </Card>
@@ -372,7 +595,7 @@ const Calculator = () => {
                         fontWeight: 700, 
                         color: results.overUnder > 0 ? 'error.main' : 'success.main'
                       }}>
-                        {results.overUnder > 0 ? '+' : ''}¥{results.overUnder}
+                        {results.overUnder > 0 ? '+' : ''}{results.overUnder}元
                       </Typography>
                       <Typography variant="body2" color="text.secondary">{t('differenceFromTarget')}</Typography>
                     </Card>
@@ -440,6 +663,8 @@ const Calculator = () => {
             )}
           </CardContent>
         </Card>
+
+
 
       <Snackbar open={notification.open} autoHideDuration={6000} onClose={handleCloseNotification} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }}>

@@ -121,6 +121,7 @@ function Account() {
       icon: <Info />,
       primary: t('aboutApp'),
       secondary: t('versionInfoHelp'),
+      onClick: () => window.location.href = '/admin',
     },
   ];
 
@@ -221,9 +222,11 @@ function Account() {
             {settingsItems.map((item, index) => (
               <React.Fragment key={index}>
                 <ListItem
+                  onClick={item.onClick}
                   sx={{
                     borderRadius: 2,
                     mb: 1,
+                    cursor: item.onClick ? 'pointer' : 'default',
                     '&:hover': {
                       background: themeMode === 'dark'
                         ? 'rgba(99, 102, 241, 0.1)'
