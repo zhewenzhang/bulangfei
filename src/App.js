@@ -139,14 +139,9 @@ function MainApp() {
                 '&.Mui-selected': {
                   color: 'primary.main',
                   background: 'rgba(99, 102, 241, 0.1)',
-                  borderRadius: 2,
-                  transform: 'scale(1.05)',
-                  transition: 'all 0.3s ease'
-                },
-                '&:hover': {
-                  background: 'rgba(99, 102, 241, 0.05)',
                   borderRadius: 2
-                }
+                },
+
               },
             }}
           >

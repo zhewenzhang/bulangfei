@@ -390,9 +390,7 @@ const History = () => {
                       sx={{
                         cursor: 'pointer',
                         '&:hover': {
-                          background: 'rgba(99, 102, 241, 0.1)',
-                          transform: 'scale(1.01)',
-                          transition: 'all 0.2s ease'
+                          background: 'rgba(99, 102, 241, 0.1)'
                         },
                         '&:nth-of-type(even)': {
                           background: 'rgba(99, 102, 241, 0.02)'
@@ -501,17 +499,7 @@ const History = () => {
              background: 'rgba(255, 255, 255, 0.98)',
              backdropFilter: 'blur(20px)',
              boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.2)',
-             animation: 'slideUp 0.3s ease-out',
-             '@keyframes slideUp': {
-               from: {
-                 transform: 'translateY(100%)',
-                 opacity: 0,
-               },
-               to: {
-                 transform: 'translateY(0)',
-                 opacity: 1,
-               },
-             },
+
            },
          }}
          TransitionProps={{
@@ -562,17 +550,7 @@ const History = () => {
              border: (theme) => theme.palette.mode === 'dark'
                ? '1px solid rgba(99, 102, 241, 0.2)'
                : '1px solid rgba(203, 213, 225, 0.4)',
-             animation: 'slideUp 0.3s ease-out',
-             '@keyframes slideUp': {
-               from: {
-                 transform: 'translateY(100%)',
-                 opacity: 0,
-               },
-               to: {
-                 transform: 'translateY(0)',
-                 opacity: 1,
-               },
-             },
+
            },
          }}
          TransitionProps={{

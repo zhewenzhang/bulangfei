@@ -59,7 +59,6 @@ export const createAppTheme = (mode) => createTheme({
       WebkitTextFillColor: 'transparent',
       position: 'relative',
       display: 'inline-block',
-      animation: 'glitch 2s infinite',
       '&::before, &::after': {
         content: 'attr(data-text)',
         position: 'absolute',
@@ -74,86 +73,12 @@ export const createAppTheme = (mode) => createTheme({
         WebkitTextFillColor: 'transparent',
       },
       '&::before': {
-        animation: 'glitch-1 0.5s infinite',
         clipPath: 'polygon(0 0, 100% 0, 100% 45%, 0 45%)',
-        transform: 'translate(-2px, -2px)',
         opacity: 0.8,
       },
       '&::after': {
-        animation: 'glitch-2 0.5s infinite',
         clipPath: 'polygon(0 55%, 100% 55%, 100% 100%, 0 100%)',
-        transform: 'translate(2px, 2px)',
         opacity: 0.8,
-      },
-      '&:hover': {
-        animation: 'glitch 0.3s infinite',
-        '&::before': {
-          animation: 'glitch-1 0.2s infinite',
-        },
-        '&::after': {
-          animation: 'glitch-2 0.2s infinite',
-        },
-      },
-      '@keyframes glitch': {
-        '0%, 100%': {
-          transform: 'translate(0)',
-        },
-        '20%': {
-          transform: 'translate(-2px, 2px)',
-        },
-        '40%': {
-          transform: 'translate(-2px, -2px)',
-        },
-        '60%': {
-          transform: 'translate(2px, 2px)',
-        },
-        '80%': {
-          transform: 'translate(2px, -2px)',
-        },
-      },
-      '@keyframes glitch-1': {
-        '0%, 100%': {
-          transform: 'translate(0)',
-          filter: 'hue-rotate(0deg)',
-        },
-        '20%': {
-          transform: 'translate(-2px, 2px)',
-          filter: 'hue-rotate(90deg)',
-        },
-        '40%': {
-          transform: 'translate(-2px, -2px)',
-          filter: 'hue-rotate(180deg)',
-        },
-        '60%': {
-          transform: 'translate(2px, 2px)',
-          filter: 'hue-rotate(270deg)',
-        },
-        '80%': {
-          transform: 'translate(2px, -2px)',
-          filter: 'hue-rotate(360deg)',
-        },
-      },
-      '@keyframes glitch-2': {
-        '0%, 100%': {
-          transform: 'translate(0)',
-          filter: 'hue-rotate(0deg)',
-        },
-        '20%': {
-          transform: 'translate(2px, -2px)',
-          filter: 'hue-rotate(45deg)',
-        },
-        '40%': {
-          transform: 'translate(2px, 2px)',
-          filter: 'hue-rotate(135deg)',
-        },
-        '60%': {
-          transform: 'translate(-2px, -2px)',
-          filter: 'hue-rotate(225deg)',
-        },
-        '80%': {
-          transform: 'translate(-2px, 2px)',
-          filter: 'hue-rotate(315deg)',
-        },
       },
     },
     h2: {
@@ -254,9 +179,7 @@ export const createAppTheme = (mode) => createTheme({
           boxShadow: mode === 'dark'
             ? '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
             : '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-          transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           '&:hover': {
-            transform: 'translateY(-2px) scale(1.01)',
             boxShadow: mode === 'dark'
               ? '0 16px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
               : '0 16px 48px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 1)',
@@ -276,9 +199,7 @@ export const createAppTheme = (mode) => createTheme({
           padding: '12px 24px',
           fontSize: '1rem',
           letterSpacing: '-0.003em',
-          transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           '&:hover': {
-            transform: 'translateY(-1px) scale(1.02)',
           },
         },
         contained: {
@@ -323,7 +244,7 @@ export const createAppTheme = (mode) => createTheme({
             backdropFilter: 'blur(10px)',
             fontSize: '1rem',
             letterSpacing: '-0.003em',
-            transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+
             '& fieldset': {
               borderColor: mode === 'dark'
                 ? 'rgba(84, 84, 88, 0.6)'
@@ -414,8 +335,6 @@ export const createAppTheme = (mode) => createTheme({
             background: mode === 'dark'
               ? 'rgba(99, 102, 241, 0.1)'
               : 'rgba(59, 130, 246, 0.08) !important',
-            transform: 'scale(1.002)',
-            transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
             boxShadow: mode === 'dark'
               ? '0 2px 8px rgba(99, 102, 241, 0.2)'
               : '0 2px 8px rgba(59, 130, 246, 0.1)',

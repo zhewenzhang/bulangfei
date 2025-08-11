@@ -31,9 +31,7 @@ yarn-error.log*
 # OS
 Thumbs.db
 
-# Docker
-Dockerfile.simple
-nginx.conf
+
 
 # Deployment
 .env.production

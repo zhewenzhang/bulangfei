@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -17,7 +17,7 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Grow,
+
   CircularProgress,
   Snackbar,
   Alert,
@@ -40,7 +40,7 @@ const Calculator = () => {
   const [saving, setSaving] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
-  const resultsRef = useRef(null);
+
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -84,15 +84,7 @@ const Calculator = () => {
     setResults(calculatedResults);
     setLoading(false);
     
-    // 自动滚动到结果区域
-    setTimeout(() => {
-      if (resultsRef.current) {
-        resultsRef.current.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
-        });
-      }
-    }, 100);
+
   };
 
   const handleSaveAndAnalyze = async () => {
@@ -129,7 +121,7 @@ const Calculator = () => {
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: 4, px: 2 }}>
         <Typography 
           variant="h1" 
           component="h1"
@@ -145,39 +137,24 @@ const Calculator = () => {
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
             backgroundSize: '200% 200%',
-            letterSpacing: '0.05em',
-            textShadow: '0 8px 16px rgba(102, 126, 234, 0.3)',
-            filter: 'drop-shadow(0 4px 8px rgba(118, 75, 162, 0.2))',
-            transform: 'rotate(-2deg)',
-            animation: 'fadeInUp 1.5s ease-out, gradientShift 3s ease-in-out infinite',
-            '@keyframes fadeInUp': {
-              '0%': {
-                opacity: 0,
-                transform: 'translateY(50px) rotate(-2deg) scale(0.8)'
-              },
-              '100%': {
-                opacity: 1,
-                transform: 'translateY(0) rotate(-2deg) scale(1)'
-              }
-            },
+            animation: 'gradientShift 4s ease-in-out infinite',
             '@keyframes gradientShift': {
-              '0%': {
+              '0%, 100%': {
                 backgroundPosition: '0% 50%'
               },
               '50%': {
                 backgroundPosition: '100% 50%'
-              },
-              '100%': {
-                backgroundPosition: '0% 50%'
               }
             },
-            '&:hover': {
-              transform: 'rotate(0deg) scale(1.05)',
-              transition: 'all 0.3s ease-in-out'
-            }
+            letterSpacing: '0.02em',
+            textShadow: '0 8px 16px rgba(102, 126, 234, 0.3)',
+            filter: 'drop-shadow(0 4px 8px rgba(118, 75, 162, 0.2))',
+            width: '100%',
+            overflow: 'visible',
+            whiteSpace: 'nowrap'
           }}
         >
-          Useful
+          Usefull
         </Typography>
       </Box>
       <Card sx={{ mb: 4 }}>
@@ -254,17 +231,15 @@ const Calculator = () => {
             </Grid>
             {formState.status === 'Sold' && (
               <Grid item xs={12}>
-                <Grow in={formState.status === 'Sold'}>
-                  <TextField 
-                    fullWidth 
-                    type="number" 
-                    variant="filled" 
-                    label={t('salePrice')} 
-                    name="soldPrice" 
-                    value={formState.soldPrice} 
-                    onChange={handleChange}
-                  />
-                </Grow>
+                <TextField 
+                fullWidth 
+                type="number" 
+                variant="filled" 
+                label={t('salePrice')} 
+                name="soldPrice" 
+                value={formState.soldPrice} 
+                onChange={handleChange}
+              />
               </Grid>
             )}
             <Grid item xs={12} sx={{ mt: 2 }}>
@@ -280,9 +255,7 @@ const Calculator = () => {
                   fontSize: '1.2rem',
                   fontWeight: 600,
                   background: 'linear-gradient(45deg, #6366f1, #8b5cf6)',
-                  '&:hover': {
-                    background: 'linear-gradient(45deg, #4f46e5, #7c3aed)',
-                  }
+
                 }}
               >
                 {loading ? (
@@ -299,9 +272,7 @@ const Calculator = () => {
         </CardContent>
       </Card>
 
-      <Grow in={results !== null}>
         <Card 
-          ref={resultsRef}
           sx={{ 
             mt: 4,
             background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1))',
@@ -452,9 +423,7 @@ const Calculator = () => {
                       fontSize: '1.2rem',
                       fontWeight: 600,
                       background: 'linear-gradient(45deg, #ec4899, #8b5cf6)',
-                      '&:hover': {
-                        background: 'linear-gradient(45deg, #db2777, #7c3aed)',
-                      }
+
                     }}
                   >
                     {saving ? (
@@ -471,7 +440,6 @@ const Calculator = () => {
             )}
           </CardContent>
         </Card>
-      </Grow>
 
       <Snackbar open={notification.open} autoHideDuration={6000} onClose={handleCloseNotification} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }}>

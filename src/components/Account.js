@@ -380,12 +380,12 @@ function Account() {
                     backgroundColor: themeMode === 'dark'
                       ? 'rgba(99, 102, 241, 0.1)'
                       : 'rgba(0, 122, 255, 0.1)',
-                    transform: 'translateY(-1px)',
+        
                     boxShadow: themeMode === 'dark'
                       ? '0 4px 12px rgba(99, 102, 241, 0.2)'
                       : '0 4px 12px rgba(0, 122, 255, 0.2)',
                   },
-                  transition: 'all 0.2s ease-in-out',
+      
                 }}
               />
             ))}
@@ -424,7 +424,7 @@ function Account() {
                   ? '0 4px 12px rgba(99, 102, 241, 0.3)'
                   : '0 4px 12px rgba(0, 122, 255, 0.3)',
                 '&:hover': {
-                  transform: 'translateY(-1px)',
+      
                   boxShadow: themeMode === 'dark'
                     ? '0 6px 16px rgba(99, 102, 241, 0.4)'
                     : '0 6px 16px rgba(0, 122, 255, 0.4)',

@@ -1,5 +1,5 @@
 {
-  "name": "residual-value-calculator",
+  "name": "usefull-residual-value-calculator",
   "build": {
     "dockerfile": "Dockerfile"
   },

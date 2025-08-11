@@ -1,6 +1,7 @@
 {
-  "name": "residual-value-calculator",
-  "version": "0.1.0",
+  "name": "usefull-residual-value-calculator",
+  "version": "1.0.0",
+  "description": "用明白-智能物品残值管理工具",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.1",

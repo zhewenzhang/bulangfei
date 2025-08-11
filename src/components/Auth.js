@@ -88,7 +88,7 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
           radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.2) 0%, rgba(236, 72, 153, 0.06) 30%, transparent 70%),
           radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0.07) 30%, transparent 70%)
         `,
-      animation: 'veilFloat 6s ease-in-out infinite',
+
       filter: 'blur(1px)',
     },
     '&::after': {
@@ -109,45 +109,10 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
           linear-gradient(45deg, transparent 20%, rgba(99, 102, 241, 0.05) 50%, transparent 80%),
           linear-gradient(-45deg, transparent 20%, rgba(236, 72, 153, 0.04) 50%, transparent 80%)
         `,
-      animation: 'veilRotate 20s linear infinite, veilShift 8s ease-in-out infinite reverse',
+
       filter: 'blur(2px)',
     },
-    '@keyframes veilFloat': {
-      '0%, 100%': {
-        transform: 'translateY(0px) scale(1)',
-        opacity: 0.7,
-      },
-      '33%': {
-        transform: 'translateY(-10px) scale(1.05)',
-        opacity: 0.9,
-      },
-      '66%': {
-        transform: 'translateY(5px) scale(0.95)',
-        opacity: 0.8,
-      },
-    },
-    '@keyframes veilShift': {
-       '0%, 100%': {
-         transform: 'translateX(0px) rotate(0deg)',
-       },
-       '25%': {
-         transform: 'translateX(10px) rotate(1deg)',
-       },
-       '50%': {
-         transform: 'translateX(-5px) rotate(-0.5deg)',
-       },
-       '75%': {
-         transform: 'translateX(8px) rotate(0.8deg)',
-       },
-     },
-     '@keyframes veilRotate': {
-       '0%': {
-         transform: 'rotate(0deg)',
-       },
-       '100%': {
-         transform: 'rotate(360deg)',
-       },
-     },
+
   };
 
   // 添加动态粒子效果
@@ -167,7 +132,7 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
       borderRadius: '50%',
       top: '20%',
       left: '10%',
-      animation: 'particleFloat1 6s ease-in-out infinite',
+
       boxShadow: `
          0 0 10px ${isDark ? 'rgba(120, 119, 198, 1)' : 'rgba(99, 102, 241, 0.8)'},
          20px 30px 0 ${isDark ? 'rgba(255, 119, 198, 0.7)' : 'rgba(236, 72, 153, 0.5)'},
@@ -221,24 +186,7 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
          1920px 95px 0 ${isDark ? 'rgba(255, 119, 198, 0.7)' : 'rgba(236, 72, 153, 0.5)'}
        `,
     },
-    '@keyframes particleFloat1': {
-      '0%, 100%': {
-        transform: 'translateY(0px) translateX(0px)',
-        opacity: 1,
-      },
-      '25%': {
-        transform: 'translateY(-20px) translateX(10px)',
-        opacity: 0.8,
-      },
-      '50%': {
-        transform: 'translateY(-40px) translateX(-5px)',
-        opacity: 0.6,
-      },
-      '75%': {
-        transform: 'translateY(-20px) translateX(15px)',
-        opacity: 0.9,
-      },
-    },
+
   };
 
   const paperStyle = {
@@ -273,17 +221,8 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
       : isDark
         ? '0 20px 60px rgba(0, 0, 0, 0.5)'
         : '0 20px 60px rgba(0, 0, 0, 0.2)',
-    transition: 'all 0.3s ease',
-    '&:hover': {
-      transform: isDialogMode ? 'none' : 'translateY(-5px)',
-      boxShadow: isDialogMode 
-        ? isDark
-          ? '0 15px 40px rgba(0, 0, 0, 0.9)'
-          : '0 15px 40px rgba(0, 0, 0, 0.2)'
-        : isDark
-          ? '0 25px 70px rgba(0, 0, 0, 0.6)'
-          : '0 25px 70px rgba(0, 0, 0, 0.25)',
-    },
+    
+
   };
 
   return (
@@ -299,7 +238,7 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
             height: '80px',
             background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.3))',
             borderRadius: '50%',
-            animation: 'float 4s ease-in-out infinite',
+
             zIndex: 0,
           }}
         />
@@ -314,7 +253,7 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
             height: '60px',
             background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2))',
             borderRadius: '50%',
-            animation: 'float 5s ease-in-out infinite reverse',
+
             zIndex: 0,
           }}
         />
@@ -367,11 +306,8 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
                   padding: '10px 20px',
                   fontSize: '0.95rem',
                   fontWeight: 600,
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                  },
+                  
+
                   '&[data-supabase-button-type="default"]': {
                     backgroundColor: isDark ? 'rgba(44, 44, 46, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                     color: isDark ? '#ffffff' : '#000000',
@@ -385,7 +321,7 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
                 border: isDark ? '1.5px solid rgba(84, 84, 88, 0.6)' : '1.5px solid rgba(0, 0, 0, 0.1)',
                 backgroundColor: isDark ? 'rgba(44, 44, 46, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                 color: isDark ? '#ffffff' : '#000000',
-                transition: 'all 0.2s ease',
+ 
                 '&:focus': {
                   borderColor: '#667eea',
                   boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.1)',
@@ -465,10 +401,8 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
                 color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.6)',
                 backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
                 '&:hover': {
-                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
-                  transform: 'scale(1.1)',
-                },
-                transition: 'all 0.2s ease',
+                    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                  },
               }}
             >
               <CloseIcon />
@@ -487,11 +421,8 @@ const AuthComponent = ({ onClose, isDialog = false }) => {
                 padding: '12px 24px',
                 fontSize: '1rem',
                 fontWeight: 600,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
-                },
+           
+
                 '&[data-supabase-button-type="default"]': {
                   backgroundColor: isDark ? 'rgba(44, 44, 46, 0.9)' : 'rgba(255, 255, 255, 0.9)',
                   color: isDark ? '#ffffff' : '#000000',
