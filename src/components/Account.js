@@ -174,12 +174,7 @@ function Account() {
               {user?.email}
             </Typography>
           </Box>
-          <Chip 
-            label={t('verifiedUser')} 
-            color="success" 
-            size="small"
-            sx={{ mb: 2 }}
-          />
+
           <Box>
             <Button
               variant="outlined"

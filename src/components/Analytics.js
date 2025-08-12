@@ -56,7 +56,7 @@ function TabPanel({ children, value, index, ...other }) {
 
 const Analytics = () => {
   const { user } = useAuth();
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [categoryStats, setCategoryStats] = useState([]);
@@ -70,66 +70,7 @@ const Analytics = () => {
   const [recentItems, setRecentItems] = useState([]);
   const [error, setError] = useState(null);
 
-  const texts = {
-    zh: {
-      title: '购物分析',
-      overview: '总览',
-      categories: '分类统计',
-      trends: '趋势分析',
-      totalItems: '总物品数',
-      totalPurchaseValue: '总购买价值',
-      totalCurrentValue: '总消耗值',
-      totalDepreciation: '使用率',
-      avgDepreciationRate: '平均贬值率',
-      categoryName: '分类',
-      itemCount: '物品数量',
-      purchaseValue: '购买价值',
-      currentValue: '当前价值',
-      depreciation: '贬值金额',
-      depreciationRate: '贬值率',
-      recentItems: '最近添加的物品',
-      itemName: '物品名称',
-      purchasePrice: '购买价格',
-      currentPrice: '每天成本',
-      serviceDuration: '使用时长',
-      addedDate: '添加日期',
-      noData: '暂无数据',
-      loading: '加载中...',
-      error: '加载数据时出错',
-      days: '天',
-      yuan: '元'
-    },
-    en: {
-      title: 'Shopping Analytics',
-      overview: 'Overview',
-      categories: 'Category Statistics',
-      trends: 'Trend Analysis',
-      totalItems: 'Total Items',
-      totalPurchaseValue: 'Total Purchase Value',
-      totalCurrentValue: 'Total Consumption Value',
-      totalDepreciation: 'Usage Rate',
-      avgDepreciationRate: 'Avg Depreciation Rate',
-      categoryName: 'Category',
-      itemCount: 'Item Count',
-      purchaseValue: 'Purchase Value',
-      currentValue: 'Current Value',
-      depreciation: 'Depreciation',
-      depreciationRate: 'Depreciation Rate',
-      recentItems: 'Recently Added Items',
-      itemName: 'Item Name',
-      purchasePrice: 'Purchase Price',
-      currentPrice: 'Daily Cost',
-      serviceDuration: 'Service Duration',
-      addedDate: 'Added Date',
-      noData: 'No data available',
-      loading: 'Loading...',
-      error: 'Error loading data',
-      days: 'days',
-      yuan: '¥'
-    }
-  };
 
-  const t = texts[language] || texts.zh;
 
   useEffect(() => {
     if (user) {
@@ -237,7 +178,7 @@ const Analytics = () => {
   };
 
   const formatCurrency = (value) => {
-    return `${Math.round(parseFloat(value || 0)).toLocaleString()}${t.yuan}`;
+    return `${Math.round(parseFloat(value || 0)).toLocaleString()}${t('yuan')}`;
   };
 
   const formatPercentage = (value) => {
@@ -258,7 +199,7 @@ const Analytics = () => {
   if (error) {
     return (
       <Alert severity="error" sx={{ m: 2 }}>
-        {t.error}: {error}
+        {t('error')}: {error}
       </Alert>
     );
   }
@@ -266,13 +207,13 @@ const Analytics = () => {
   return (
     <Box sx={{ width: '100%' }}>
       <Typography variant="h4" gutterBottom>
-        {t.title}
+        {t('analyticsTitle')}
       </Typography>
 
       <Tabs value={tabValue} onChange={handleTabChange} aria-label="analytics tabs">
-        <Tab label={t.overview} />
-        <Tab label={t.categories} />
-        <Tab label={t.trends} />
+        <Tab label={t('overview')} />
+        <Tab label={t('categories')} />
+        <Tab label={t('trends')} />
       </Tabs>
 
       <TabPanel value={tabValue} index={0}>
@@ -282,7 +223,7 @@ const Analytics = () => {
             <Card>
               <CardContent>
                 <Typography color="textSecondary" gutterBottom>
-                  {t.totalItems}
+                  {t('totalItems')}
                 </Typography>
                 <Typography variant="h4">
                   {totalStats.totalItems}
@@ -294,7 +235,7 @@ const Analytics = () => {
             <Card>
               <CardContent>
                 <Typography color="textSecondary" gutterBottom>
-                  {t.totalPurchaseValue}
+                  {t('totalPurchaseValue')}
                 </Typography>
                 <Typography variant="h4">
                   {formatCurrency(totalStats.totalPurchaseValue)}
@@ -306,7 +247,7 @@ const Analytics = () => {
             <Card>
               <CardContent>
                 <Typography color="textSecondary" gutterBottom>
-                  {t.totalCurrentValue}
+                  {t('totalCurrentValue')}
                 </Typography>
                 <Typography variant="h4">
                   {formatCurrency(totalStats.totalCurrentValue)}
@@ -318,7 +259,7 @@ const Analytics = () => {
             <Card>
               <CardContent>
                 <Typography color="textSecondary" gutterBottom>
-                  {t.totalDepreciation}
+                  {t('totalDepreciation')}
                 </Typography>
                 <Typography variant="h4" color="primary">
                   {formatPercentage(totalStats.totalDepreciation)}
@@ -330,7 +271,7 @@ const Analytics = () => {
             <Card>
               <CardContent>
                 <Typography color="textSecondary" gutterBottom>
-                  {t.avgDepreciationRate}
+                  {t('avgDepreciationRate')}
                 </Typography>
                 <Typography variant="h4" color="error">
                   {formatPercentage(totalStats.avgDepreciationRate)}
@@ -344,19 +285,19 @@ const Analytics = () => {
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              {t.recentItems}
+              {t('recentItems')}
             </Typography>
             {recentItems.length > 0 ? (
               <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>{t.itemName}</TableCell>
-                      <TableCell>{t.categoryName}</TableCell>
-                      <TableCell align="right">{t.purchasePrice}</TableCell>
-                      <TableCell align="right">{t.currentPrice}</TableCell>
-                      <TableCell align="right">{t.serviceDuration}</TableCell>
-                      <TableCell align="right">{t.addedDate}</TableCell>
+                      <TableCell>{t('itemName')}</TableCell>
+                      <TableCell>{t('categoryName')}</TableCell>
+                      <TableCell align="right">{t('purchasePrice')}</TableCell>
+                      <TableCell align="right">{t('currentPrice')}</TableCell>
+                      <TableCell align="right">{t('serviceDuration')}</TableCell>
+                      <TableCell align="right">{t('addedDate')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -374,7 +315,7 @@ const Analytics = () => {
                         </TableCell>
                         <TableCell align="right">{formatCurrency(item.purchase_price)}</TableCell>
                         <TableCell align="right">{formatCurrency(item.actual)}</TableCell>
-                        <TableCell align="right">{item.service_duration} {t.days}</TableCell>
+                        <TableCell align="right">{item.service_duration} {t('days')}</TableCell>
                         <TableCell align="right">
                           {new Date(item.created_at).toLocaleDateString()}
                         </TableCell>
@@ -384,7 +325,7 @@ const Analytics = () => {
                 </Table>
               </TableContainer>
             ) : (
-              <Typography color="textSecondary">{t.noData}</Typography>
+              <Typography color="textSecondary">{t('noData')}</Typography>
             )}
           </CardContent>
         </Card>
@@ -397,7 +338,7 @@ const Analytics = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  {t.categories} - {t.itemCount}
+                  {t('categories')} - {t('itemCount')}
                 </Typography>
                 {categoryStats.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
@@ -420,7 +361,7 @@ const Analytics = () => {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <Typography color="textSecondary">{t.noData}</Typography>
+                  <Typography color="textSecondary">{t('noData')}</Typography>
                 )}
               </CardContent>
             </Card>
@@ -431,7 +372,7 @@ const Analytics = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  {t.categories} - {t.purchaseValue}
+                  {t('categories')} - {t('purchaseValue')}
                 </Typography>
                 {categoryStats.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
@@ -441,12 +382,12 @@ const Analytics = () => {
                       <YAxis />
                       <Tooltip formatter={(value) => formatCurrency(value)} />
                       <Legend />
-                      <Bar dataKey="total_purchase_value" fill="#8884d8" name={t.purchaseValue} />
-                      <Bar dataKey="total_current_value" fill="#82ca9d" name={t.currentValue} />
+                      <Bar dataKey="total_purchase_value" fill="#8884d8" name={t('purchaseValue')} />
+                      <Bar dataKey="total_current_value" fill="#82ca9d" name={t('currentValue')} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <Typography color="textSecondary">{t.noData}</Typography>
+                  <Typography color="textSecondary">{t('noData')}</Typography>
                 )}
               </CardContent>
             </Card>
@@ -457,19 +398,19 @@ const Analytics = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  {t.categories} - 详细统计
+                  {t('categories')} - 详细统计
                 </Typography>
                 {categoryStats.length > 0 ? (
                   <TableContainer>
                     <Table>
                       <TableHead>
                         <TableRow>
-                          <TableCell>{t.categoryName}</TableCell>
-                          <TableCell align="right">{t.itemCount}</TableCell>
-                          <TableCell align="right">{t.purchaseValue}</TableCell>
-                          <TableCell align="right">{t.currentValue}</TableCell>
-                          <TableCell align="right">{t.depreciation}</TableCell>
-                          <TableCell align="right">{t.depreciationRate}</TableCell>
+                          <TableCell>{t('categoryName')}</TableCell>
+                          <TableCell align="right">{t('itemCount')}</TableCell>
+                          <TableCell align="right">{t('purchaseValue')}</TableCell>
+                          <TableCell align="right">{t('currentValue')}</TableCell>
+                          <TableCell align="right">{t('depreciation')}</TableCell>
+                          <TableCell align="right">{t('depreciationRate')}</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -508,7 +449,7 @@ const Analytics = () => {
                     </Table>
                   </TableContainer>
                 ) : (
-                  <Typography color="textSecondary">{t.noData}</Typography>
+                  <Typography color="textSecondary">{t('noData')}</Typography>
                 )}
               </CardContent>
             </Card>
@@ -518,20 +459,20 @@ const Analytics = () => {
 
       <TabPanel value={tabValue} index={2}>
         <Typography variant="h6" gutterBottom>
-          {t.trends}
+          {t('trends')}
         </Typography>
         <Alert severity="info">
-          趋势分析功能正在开发中，敬请期待！
+          {t('trendsComingSoon')}
         </Alert>
       </TabPanel>
       
       {/* 公式说明备注 */}
       <Box sx={{ mt: 4, p: 2, borderTop: '1px solid #e0e0e0' }}>
         <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.75rem', lineHeight: 1.4 }}>
-          <strong>计算公式说明：</strong><br/>
-          • 总消耗值 = Σ(使用时长 × 目标日耗)<br/>
-          • 使用率 = 总消耗值 ÷ 总购买价值 × 100%<br/>
-          • 贬值率 = (购买价格 - 当前价格) ÷ 购买价格 × 100%
+          <strong>{t('calculationFormula')}</strong><br/>
+          {t('totalConsumptionFormula')}<br/>
+          {t('usageRateFormula')}<br/>
+          {t('depreciationRateFormula')}
         </Typography>
       </Box>
     </Box>

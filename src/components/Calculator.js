@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import aiClassificationService from '../services/aiClassificationService';
+import CategoryDurationService from '../services/categoryDurationService';
 import AuthComponent from './Auth';
 
 import { Dialog, DialogContent } from '@mui/material';
@@ -42,9 +43,12 @@ const Calculator = () => {
   const [categories, setCategories] = useState([]);
   const [suggestedCategories, setSuggestedCategories] = useState([]);
   const [classifying, setClassifying] = useState(false);
+  const [autoCalculateEnabled, setAutoCalculateEnabled] = useState(true);
+  const [manualTargetEdit, setManualTargetEdit] = useState(false);
 
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const resultsRef = useRef(null);
   const [saving, setSaving] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
@@ -119,6 +123,7 @@ const Calculator = () => {
       // 如果置信度高于0.7，自动选择分类
       if (result.confidence > 0.7) {
         setFormState(prev => ({ ...prev, categoryId: result.suggestedCategory.id }));
+        // useEffect会自动处理目标日耗计算，无需手动调用
       }
     } else {
       console.log('分类失败或无结果:', result);
@@ -167,9 +172,85 @@ const Calculator = () => {
 
 
 
+  // 自动计算目标日耗
+  const autoCalculateTarget = useCallback((purchasePrice, categoryId) => {
+    console.log('autoCalculateTarget called:', { purchasePrice, categoryId, autoCalculateEnabled, manualTargetEdit });
+    
+    if (!autoCalculateEnabled || manualTargetEdit || !purchasePrice || !categoryId) {
+      console.log('autoCalculateTarget early return:', { autoCalculateEnabled, manualTargetEdit, purchasePrice, categoryId });
+      return;
+    }
+
+    const price = parseFloat(purchasePrice);
+    if (isNaN(price) || price <= 0) {
+      console.log('Invalid price:', price);
+      return;
+    }
+
+    // 找到对应的分类
+    const category = categories.find(cat => cat.id === categoryId);
+    console.log('Found category:', category);
+    if (!category) {
+      console.log('Category not found for id:', categoryId);
+      return;
+    }
+
+    // 使用CategoryDurationService计算目标日耗
+    const result = CategoryDurationService.autoCalculateTarget(price, category.name);
+    console.log('Calculation result:', result);
+    
+    setFormState(prevState => ({
+      ...prevState,
+      targetDailyCost: result.dailyTarget.toString()
+    }));
+
+    // 显示计算信息
+    setNotification({
+      open: true,
+      message: t('autoCalculateNotification', {
+        categoryName: category.name,
+        dailyTarget: result.dailyTarget,
+        duration: result.duration
+      }),
+      severity: 'info'
+    });
+  }, [autoCalculateEnabled, manualTargetEdit, categories]);
+
+  // 监听购买价格和分类变化，自动计算目标日耗
+  useEffect(() => {
+    if (formState.purchasePrice && formState.categoryId && !manualTargetEdit) {
+      console.log('useEffect triggered auto calculation:', { purchasePrice: formState.purchasePrice, categoryId: formState.categoryId });
+      autoCalculateTarget(formState.purchasePrice, formState.categoryId);
+    }
+  }, [formState.purchasePrice, formState.categoryId, manualTargetEdit, autoCalculateTarget]);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormState(prevState => ({ ...prevState, [name]: value }));
+    
+    setFormState(prevState => {
+      const newState = { ...prevState, [name]: value };
+      
+      // 如果是目标日耗的手动修改，标记为手动编辑
+      if (name === 'targetDailyCost') {
+        setManualTargetEdit(true);
+      }
+      
+      // useEffect会自动处理目标日耗计算，无需手动调用
+      
+      return newState;
+    });
+  };
+
+  // 处理分类选择变化
+  const handleCategoryChange = (event) => {
+    const { value } = event.target;
+    setFormState(prevState => ({ ...prevState, categoryId: value }));
+    // useEffect会自动处理目标日耗计算，无需手动调用
+  };
+
+  // 重置自动计算状态
+  const resetAutoCalculate = () => {
+    setManualTargetEdit(false);
   };
 
   const handleCloseNotification = () => {
@@ -209,6 +290,16 @@ const Calculator = () => {
     setResults(calculatedResults);
     setLoading(false);
     
+    // 滚动到结果区域
+    setTimeout(() => {
+      if (resultsRef.current) {
+        resultsRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+    }, 100);
+    
 
   };
 
@@ -243,6 +334,7 @@ const Calculator = () => {
       actual: results.actualDailyCost, 
       service_duration: results.daysInService,
       purchase_price: formState.purchasePrice ? parseFloat(formState.purchasePrice) : null,
+      purchase_date: formState.purchaseDate, // 保存购买日期
       category_id: formState.categoryId,
       classification_method: classificationMethod,
       confidence_score: confidenceScore,
@@ -269,6 +361,7 @@ const Calculator = () => {
       });
       setResults(null);
       setSuggestedCategories([]);
+      setManualTargetEdit(false);
     }
     setSaving(false);
   };
@@ -343,14 +436,14 @@ const Calculator = () => {
             {/* 分类选择器 */}
             <Grid item xs={12}>
               <FormControl fullWidth variant="filled">
-                <InputLabel sx={{ fontSize: '1.1rem' }}>物品分类</InputLabel>
-                <Select 
-                  name="categoryId" 
-                  value={formState.categoryId || ''} 
-                  onChange={handleChange}
-                  label="物品分类"
+                <InputLabel sx={{ fontSize: '1.1rem' }}>{t('itemCategory')}</InputLabel>
+                <Select
+                  name="categoryId"
+                  value={formState.categoryId || ''}
+                  onChange={handleCategoryChange}
+                  label={t('itemCategory')}
                 >
-                  <MenuItem value="">请选择分类</MenuItem>
+                  <MenuItem value="">{t('selectCategory')}</MenuItem>
                   {categories.map((category) => (
                     <MenuItem key={category.id} value={category.id}>
                       <Box display="flex" alignItems="center" gap={1}>
@@ -366,7 +459,7 @@ const Calculator = () => {
               {suggestedCategories.length > 0 && (
                 <Box sx={{ mt: 1 }}>
                   <Typography variant="caption" color="textSecondary">
-                    建议分类：
+                    {t('suggestedCategories')}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap' }}>
                     {suggestedCategories.map((suggestion, index) => {
@@ -388,7 +481,10 @@ const Calculator = () => {
                             borderColor: category.color || '#6b7280',
                             color: formState.categoryId === category.id ? 'white' : (category.color || '#6b7280')
                           }}
-                          onClick={() => setFormState(prev => ({ ...prev, categoryId: category.id }))}
+                          onClick={() => {
+                            setFormState(prev => ({ ...prev, categoryId: category.id }));
+                            // useEffect会自动处理目标日耗计算，无需手动调用
+                          }}
                           clickable
                         />
                       );
@@ -401,7 +497,7 @@ const Calculator = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                   <CircularProgress size={16} />
                   <Typography variant="caption" color="textSecondary">
-                    正在分析分类...
+                    {t('analyzingCategory')}
                   </Typography>
                 </Box>
               )}
@@ -419,16 +515,39 @@ const Calculator = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField 
-                fullWidth 
-                type="number" 
-                variant="filled" 
-                label={t('targetDailyCost')} 
-                name="targetDailyCost" 
-                value={formState.targetDailyCost} 
-                onChange={handleChange}
-                sx={{ '& .MuiInputLabel-root': { fontSize: '1.1rem' } }}
-              />
+              <Box sx={{ position: 'relative' }}>
+                <TextField 
+                  fullWidth 
+                  type="number" 
+                  variant="filled" 
+                  label={t('targetDailyCost')} 
+                  name="targetDailyCost" 
+                  value={formState.targetDailyCost} 
+                  onChange={handleChange}
+                  sx={{ '& .MuiInputLabel-root': { fontSize: '1.1rem' } }}
+                  helperText={manualTargetEdit ? t('manuallyModified') : (autoCalculateEnabled ? t('autoCalculateBasedOnCategory') : '')}
+                />
+                {manualTargetEdit && (
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      resetAutoCalculate();
+                      if (formState.purchasePrice && formState.categoryId) {
+                        autoCalculateTarget(formState.purchasePrice, formState.categoryId);
+                      }
+                    }}
+                    sx={{ 
+                      position: 'absolute', 
+                      right: 8, 
+                      top: 8, 
+                      minWidth: 'auto',
+                      fontSize: '0.75rem'
+                    }}
+                  >
+                    {t('recalculate')}
+                  </Button>
+                )}
+              </Box>
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField 
@@ -496,6 +615,7 @@ const Calculator = () => {
       </Card>
 
         <Card 
+          ref={resultsRef}
           sx={{ 
             mt: 4,
             background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1))',

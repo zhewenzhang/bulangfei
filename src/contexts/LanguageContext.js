@@ -132,6 +132,52 @@ const translations = {
     serviceDays: '服役天数',
     usageRate: '使用率',
     closeDetail: '关闭详情',
+    
+    // 编辑功能
+    editRecord: '编辑记录',
+    manuallyModified: '已手动修改',
+    autoCalculateBasedOnCategory: '将根据分类自动计算',
+    recalculate: '重新计算',
+    autoCalculateNotification: '根据分类「{categoryName}」自动计算目标日耗：{dailyTarget}元/天（预期持有{duration}天）',
+    loading: '加载中...',
+    loadFailed: '加载失败',
+    itemCategory: '物品分类',
+    selectCategory: '请选择分类',
+    suggestedCategories: '建议分类：',
+    analyzingCategory: '正在分析分类...',
+    save: '保存',
+    cancel: '取消',
+    saving: '保存中...',
+    editContent: '编辑内容',
+    
+    // Analytics页面
+    analyticsTitle: '购物分析',
+    overview: '总览',
+    categories: '分类统计',
+    trends: '趋势分析',
+    totalItems: '总物品数',
+    totalPurchaseValue: '总购买价值',
+    totalCurrentValue: '总消耗值',
+    totalDepreciation: '使用率',
+    avgDepreciationRate: '平均贬值率',
+    categoryName: '分类',
+    itemCount: '物品数量',
+    purchaseValue: '购买价值',
+    currentValue: '当前价值',
+    depreciation: '贬值金额',
+    depreciationRate: '贬值率',
+    recentItems: '最近添加的物品',
+    currentPrice: '每天成本',
+    serviceDuration: '使用时长',
+    addedDate: '添加日期',
+    noData: '暂无数据',
+    error: '加载数据时出错',
+    yuan: '元',
+    trendsComingSoon: '趋势分析功能正在开发中，敬请期待！',
+    calculationFormula: '计算公式说明：',
+    totalConsumptionFormula: '• 总消耗值 = Σ(使用时长 × 目标日耗)',
+    usageRateFormula: '• 使用率 = 总消耗值 ÷ 总购买价值 × 100%',
+    depreciationRateFormula: '• 贬值率 = (购买价格 - 当前价格) ÷ 购买价格 × 100%',
   },
   
   'zh-TW': {
@@ -262,6 +308,52 @@ const translations = {
     serviceDays: '服役天數',
     usageRate: '使用率',
     closeDetail: '關閉詳情',
+    
+    // Edit Record
+    editRecord: '編輯記錄',
+    manuallyModified: '已手動修改',
+    autoCalculateBasedOnCategory: '將根據分類自動計算',
+    recalculate: '重新計算',
+    autoCalculateNotification: '根據分類「{categoryName}」自動計算目標日耗：{dailyTarget}元/天（預期持有{duration}天）',
+    loading: '加載中...',
+    loadFailed: '加載失敗',
+    itemCategory: '物品分類',
+    selectCategory: '請選擇分類',
+    suggestedCategories: '建議分類：',
+    analyzingCategory: '正在分析分類...',
+    save: '保存',
+    cancel: '取消',
+    saving: '保存中...',
+    editContent: '編輯內容',
+    
+    // Analytics Page
+    analyticsTitle: '購物分析',
+    overview: '總覽',
+    categories: '分類統計',
+    trends: '趨勢分析',
+    totalItems: '總物品數',
+    totalPurchaseValue: '總購買價值',
+    totalCurrentValue: '總消耗值',
+    totalDepreciation: '使用率',
+    avgDepreciationRate: '平均貶值率',
+    categoryName: '分類',
+    itemCount: '物品數量',
+    purchaseValue: '購買價值',
+    currentValue: '當前價值',
+    depreciation: '貶值金額',
+    depreciationRate: '貶值率',
+    recentItems: '最近添加的物品',
+    currentPrice: '每天成本',
+    serviceDuration: '使用時長',
+    addedDate: '添加日期',
+    noData: '暫無數據',
+    error: '加載數據時出錯',
+    yuan: '元',
+    trendsComingSoon: '趨勢分析功能正在開發中，敬請期待！',
+    calculationFormula: '計算公式說明：',
+    totalConsumptionFormula: '• 總消耗值 = Σ(使用時長 × 目標日耗)',
+    usageRateFormula: '• 使用率 = 總消耗值 ÷ 總購買價值 × 100%',
+    depreciationRateFormula: '• 貶值率 = (購買價格 - 當前價格) ÷ 購買價格 × 100%',
   },
   
   'en': {
@@ -394,6 +486,52 @@ const translations = {
     serviceDays: 'Service Days',
     usageRate: 'Usage Rate',
     closeDetail: 'Close Detail',
+    
+    // Edit functionality
+    editRecord: 'Edit Record',
+    manuallyModified: 'Manually Modified',
+    autoCalculateBasedOnCategory: 'Will auto-calculate based on category',
+    recalculate: 'Recalculate',
+    autoCalculateNotification: 'Auto-calculated target daily cost based on category "{categoryName}": {dailyTarget} yuan/day (expected to hold for {duration} days)',
+    loading: 'Loading...',
+    loadFailed: 'Load Failed',
+    itemCategory: 'Item Category',
+    selectCategory: 'Please select category',
+    suggestedCategories: 'Suggested categories:',
+    analyzingCategory: 'Analyzing category...',
+    save: 'Save',
+    cancel: 'Cancel',
+    saving: 'Saving...',
+    editContent: 'Edit Content',
+    
+    // Analytics page
+    analyticsTitle: 'Shopping Analytics',
+    overview: 'Overview',
+    categories: 'Category Statistics',
+    trends: 'Trend Analysis',
+    totalItems: 'Total Items',
+    totalPurchaseValue: 'Total Purchase Value',
+    totalCurrentValue: 'Total Consumption Value',
+    totalDepreciation: 'Usage Rate',
+    avgDepreciationRate: 'Avg Depreciation Rate',
+    categoryName: 'Category',
+    itemCount: 'Item Count',
+    purchaseValue: 'Purchase Value',
+    currentValue: 'Current Value',
+    depreciation: 'Depreciation',
+    depreciationRate: 'Depreciation Rate',
+    recentItems: 'Recently Added Items',
+    currentPrice: 'Daily Cost',
+    serviceDuration: 'Service Duration',
+    addedDate: 'Added Date',
+    noData: 'No data available',
+    error: 'Error loading data',
+    yuan: '¥',
+    trendsComingSoon: 'Trend analysis feature is under development, stay tuned!',
+    calculationFormula: 'Calculation Formula:',
+    totalConsumptionFormula: '• Total Consumption Value = Σ(Service Duration × Target Daily Cost)',
+    usageRateFormula: '• Usage Rate = Total Consumption Value ÷ Total Purchase Value × 100%',
+    depreciationRateFormula: '• Depreciation Rate = (Purchase Price - Current Price) ÷ Purchase Price × 100%',
   },
   
   'ja': {
@@ -541,8 +679,18 @@ export const LanguageProvider = ({ children }) => {
     localStorage.setItem('app_language', newLanguage);
   };
 
-  const t = (key) => {
-    return translations[language]?.[key] || translations['zh-CN'][key] || key;
+  const t = (key, params = {}) => {
+    let text = translations[language]?.[key] || translations['zh-CN'][key] || key;
+    
+    // 替换参数
+    if (params && typeof text === 'string') {
+      Object.keys(params).forEach(param => {
+        const regex = new RegExp(`\\{${param}\\}`, 'g');
+        text = text.replace(regex, params[param]);
+      });
+    }
+    
+    return text;
   };
 
   // 从本地存储恢复语言设置

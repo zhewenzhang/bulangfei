@@ -18,9 +18,16 @@ import {
   Button,
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogActions,
   Grid,
   Paper,
+  TextField,
+  MenuItem,
+  Snackbar,
+  Alert,
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
 import Auth from './Auth';
 
 async function fetchRecords(userId) {
@@ -79,6 +86,10 @@ const History = () => {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
 
   const handleRowClick = (row) => {
     setSelectedRow(row);
@@ -88,6 +99,78 @@ const History = () => {
   const handleDetailClose = () => {
     setDetailDialogOpen(false);
     setSelectedRow(null);
+  };
+
+  const handleEditClick = () => {
+    setEditFormData({
+         name: selectedRow.name || '',
+         purchase_price: selectedRow.purchase_price || '',
+         target: selectedRow.target || '',
+         purchase_date: selectedRow.purchase_date || ''
+       });
+    setEditDialogOpen(true);
+  };
+
+  const handleEditClose = () => {
+    setEditDialogOpen(false);
+    setEditFormData({});
+  };
+
+  const handleEditSave = async () => {
+    try {
+      setSaving(true);
+      
+      // 计算服役天数
+      const purchaseDate = new Date(editFormData.purchase_date);
+      const currentDate = new Date();
+      const timeDiff = currentDate.getTime() - purchaseDate.getTime();
+      const serviceDuration = Math.floor(timeDiff / (1000 * 3600 * 24));
+      
+      const { error } = await supabase
+        .from('calculations')
+        .update({
+          name: editFormData.name,
+          purchase_price: parseFloat(editFormData.purchase_price),
+          target: parseFloat(editFormData.target),
+          purchase_date: editFormData.purchase_date,
+          service_duration: serviceDuration
+        })
+        .eq('id', selectedRow.id);
+
+      if (error) throw error;
+
+      // 重新获取数据
+      const updatedData = await fetchRecords(user.id);
+      setRows(updatedData);
+      
+      // 更新选中的行数据
+      const updatedRow = updatedData.find(row => row.id === selectedRow.id);
+      setSelectedRow(updatedRow);
+
+      setNotification({
+        open: true,
+        message: '记录更新成功！',
+        severity: 'success'
+      });
+      
+      setEditDialogOpen(false);
+    } catch (error) {
+      console.error('Error updating record:', error);
+      setNotification({
+        open: true,
+        message: '更新失败：' + error.message,
+        severity: 'error'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleFormChange = (field, value) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   useEffect(() => {
@@ -194,7 +277,7 @@ const History = () => {
                     fontWeight: 700,
                     fontFamily: 'system-ui, -apple-system, sans-serif'
                   }}>
-                    {rows.reduce((sum, row) => sum + (Number(row.actual) * Number(row.service_duration)), 0).toFixed(2)}元
+                    {rows.reduce((sum, row) => sum + (Number(row.target || 0) * Number(row.service_duration || 0)), 0).toFixed(2)}元
                   </Typography>
                 </Paper>
               </Grid>
@@ -250,8 +333,18 @@ const History = () => {
                       const unachievedItems = rows.filter(row => Number(row.actual) > Number(row.target));
                       if (unachievedItems.length === 0) return t('allAchieved');
                       const avgDaysNeeded = unachievedItems.reduce((sum, row) => {
-                        const ratio = Number(row.actual) / Number(row.target);
-                        return sum + Math.ceil((ratio - 1) * Number(row.service_duration));
+                        const purchasePrice = Number(row.purchase_price || 0);
+                        const targetDaily = Number(row.target || 0);
+                        const currentDaily = Number(row.actual || 0);
+                        const serviceDays = Number(row.service_duration || 0);
+                        
+                        if (targetDaily <= 0) return sum;
+                        
+                        // 计算达到目标需要的总天数
+                        const totalDaysNeeded = Math.ceil(purchasePrice / targetDaily);
+                        // 还需要的天数 = 总需要天数 - 已服役天数
+                        const remainingDays = Math.max(0, totalDaysNeeded - serviceDays);
+                        return sum + remainingDays;
                       }, 0) / unachievedItems.length;
                       return `${Math.ceil(avgDaysNeeded)}天`;
                     })()} 
@@ -466,8 +559,15 @@ const History = () => {
                                 return t('achieved');
                               } else {
                                 // 计算还需要多少天才能达成目标
-                                const daysNeeded = Math.ceil((actual - target) / target * row.service_duration);
-                                return `${daysNeeded}${t('daysToAchieve')}`;
+                                const purchasePrice = Number(row.purchase_price || 0);
+                                const serviceDays = Number(row.service_duration || 0);
+                                if (target <= 0) return '无法计算';
+                                
+                                // 总需要天数 = 购买价格 / 目标日耗
+                                const totalDaysNeeded = Math.ceil(purchasePrice / target);
+                                // 还需要天数 = 总需要天数 - 已服役天数
+                                const remainingDays = Math.max(0, totalDaysNeeded - serviceDays);
+                                return `${remainingDays}${t('daysToAchieve')}`;
                               }
                             })()}
                           </Typography>
@@ -813,8 +913,28 @@ const History = () => {
 
                </Grid>
                
-               {/* 关闭按钮 */}
-               <Box sx={{ textAlign: 'center', mt: 4 }}>
+               {/* 操作按钮 */}
+               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
+                 <Button 
+                   variant="outlined"
+                   startIcon={<EditIcon />}
+                   onClick={handleEditClick}
+                   sx={{
+                     borderColor: '#667eea',
+                     color: '#667eea',
+                     '&:hover': {
+                       borderColor: '#5a6fd8',
+                       backgroundColor: 'rgba(102, 126, 234, 0.1)'
+                     },
+                     px: 3,
+                     py: 1.5,
+                     borderRadius: 3,
+                     fontWeight: 600,
+                     fontFamily: 'system-ui, -apple-system, sans-serif'
+                   }}
+                 >
+                   {t('editContent')}
+                 </Button>
                  <Button 
                    variant="contained" 
                    onClick={handleDetailClose}
@@ -837,6 +957,111 @@ const History = () => {
            )}
          </DialogContent>
        </Dialog>
+
+       {/* 编辑对话框 */}
+       <Dialog 
+         open={editDialogOpen} 
+         onClose={handleEditClose} 
+         maxWidth="sm" 
+         fullWidth
+         sx={{
+           '& .MuiDialog-paper': {
+             position: 'fixed',
+             bottom: 0,
+             margin: 0,
+             borderRadius: '16px 16px 0 0',
+             maxHeight: '80vh',
+             animation: editDialogOpen ? 'slideUp 0.3s ease-out' : 'slideDown 0.3s ease-in',
+           },
+           '& .MuiBackdrop-root': {
+             backgroundColor: 'rgba(0, 0, 0, 0.5)',
+           },
+           '@keyframes slideUp': {
+             from: {
+               transform: 'translateY(100%)',
+             },
+             to: {
+               transform: 'translateY(0)',
+             },
+           },
+           '@keyframes slideDown': {
+             from: {
+               transform: 'translateY(0)',
+             },
+             to: {
+               transform: 'translateY(100%)',
+             },
+           },
+         }}
+       >
+         <DialogTitle sx={{ 
+           background: 'linear-gradient(45deg, #667eea 0%, #764ba2 100%)',
+           color: 'white',
+           fontWeight: 600,
+           textAlign: 'center'
+         }}>
+           {t('editRecord')}
+         </DialogTitle>
+         <DialogContent>
+           <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+             <TextField
+               fullWidth
+               label={t('itemName')}
+               value={editFormData.name || ''}
+               onChange={(e) => handleFormChange('name', e.target.value)}
+             />
+             <TextField
+               fullWidth
+               label={t('purchasePrice')}
+               type="number"
+               value={editFormData.purchase_price || ''}
+               onChange={(e) => handleFormChange('purchase_price', e.target.value)}
+             />
+             <TextField
+               fullWidth
+               label={t('targetDailyCost')}
+               type="number"
+               value={editFormData.target || ''}
+               onChange={(e) => handleFormChange('target', e.target.value)}
+             />
+             <TextField
+                fullWidth
+                label={t('purchaseDate')}
+                type="date"
+                value={editFormData.purchase_date || ''}
+                onChange={(e) => handleFormChange('purchase_date', e.target.value)}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+
+           </Box>
+         </DialogContent>
+         <DialogActions>
+           <Button onClick={handleEditClose}>{t('cancel')}</Button>
+           <Button 
+             onClick={handleEditSave} 
+             variant="contained"
+             disabled={saving}
+           >
+             {saving ? t('saving') : t('save')}
+           </Button>
+         </DialogActions>
+       </Dialog>
+
+       {/* 通知 */}
+       <Snackbar 
+         open={notification.open} 
+         autoHideDuration={6000} 
+         onClose={() => setNotification(prev => ({ ...prev, open: false }))}
+       >
+         <Alert 
+           onClose={() => setNotification(prev => ({ ...prev, open: false }))} 
+           severity={notification.severity}
+         >
+           {notification.message}
+         </Alert>
+       </Snackbar>
     </Box>
   );
 };
