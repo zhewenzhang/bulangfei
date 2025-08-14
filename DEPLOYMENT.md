@@ -1,5 +1,46 @@
 # 部署说明
 
+## 🚨 重要：Supabase 环境变量配置
+
+### 问题描述
+部署时出现错误：`Supabase URL or Anon Key is missing`
+页面显示空白，控制台报错：`Cannot read properties of null (reading 'get')`
+
+### 原因
+在Zeabur部署时，React应用的环境变量没有正确传递到构建过程中，导致Supabase客户端初始化失败。
+
+### 解决方案
+
+#### 步骤1：在Zeabur控制台设置环境变量
+1. 登录 [Zeabur控制台](https://zeabur.com)
+2. 选择你的项目
+3. 点击 **Settings** → **Environment Variables**
+4. 添加以下环境变量（**注意：必须在构建时设置**）：
+   ```
+   REACT_APP_SUPABASE_URL=https://uwvlduprxppwdkjkvwby.supabase.co
+   REACT_APP_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3dmxkdXByeHBwd2Rramt2d2J5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5NDYxMTMsImV4cCI6MjA2NTUyMjExM30.IT_7wL-0Buf1iyGKI1cw2PY0GtlKFljFiNOVYBvA_o0
+   ```
+
+#### 步骤2：确保构建时环境变量传递
+- Dockerfile已配置ARG和ENV指令
+- 环境变量会在Docker构建时传递给React应用
+
+#### 步骤3：重新部署
+1. 确保环境变量已保存
+2. 触发重新部署（推送新代码或手动重新部署）
+3. 等待构建完成
+
+#### 步骤4：验证部署
+- 打开部署的URL
+- 检查浏览器控制台是否还有错误
+- 确认应用正常加载
+
+### 🔍 本地测试环境变量
+运行以下命令检查本地环境变量配置：
+```bash
+node check-env.js
+```
+
 ## 常见问题及解决方案
 
 ### 问题 1: react-scripts 权限错误
