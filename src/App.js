@@ -16,7 +16,6 @@ import CalculateIcon from '@mui/icons-material/Calculate';
 import HistoryIcon from '@mui/icons-material/History';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { createAppTheme } from './theme';
 import Calculator from './components/Calculator';
@@ -24,6 +23,7 @@ import History from './components/History';
 import Account from './components/Account';
 import Analytics from './components/Analytics';
 import Admin from './components/Admin';
+import ModelSpeedTest from './components/ModelSpeedTest';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -46,7 +46,7 @@ export const useTheme = () => {
 function MainApp() {
   const [themeMode, setThemeMode] = useState('dark');
   const { loading, networkError, retryConnection, retryCount } = useAuth();
-  const { t } = useLanguage();
+  // const { t } = useLanguage(); // 暂时注释掉未使用的翻译功能
   const [showNetworkAlert, setShowNetworkAlert] = useState(false);
 
   const toggleTheme = () => {
@@ -141,6 +141,7 @@ function MainContent({ themeMode, showNetworkAlert, handleNetworkAlertClose, han
           <Route path="/history" element={<History />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/speed-test" element={<ModelSpeedTest />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </Container>
@@ -165,6 +166,7 @@ function MainContent({ themeMode, showNetworkAlert, handleNetworkAlertClose, han
             '& .MuiBottomNavigationAction-root': {
               color: 'text.secondary',
               fontWeight: 600,
+              fontSize: '0.75rem',
               '&.Mui-selected': {
                 color: 'primary.main',
                 background: 'rgba(99, 102, 241, 0.1)',

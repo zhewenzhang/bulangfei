@@ -6,7 +6,8 @@ import { supabase } from '../supabaseClient';
  */
 class AIClassificationService {
   constructor() {
-    this.apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+    // 默认模型，如果数据库中没有指定模型则使用此默认值
+    this.defaultModel = 'gemini-2.5-flash-lite';
   }
 
   /**
@@ -123,8 +124,12 @@ ${categoryOptions}
 
 只返回JSON，不要其他文字。`;
 
+      // 构建API端点URL，使用配置中的模型名称
+      const modelName = apiConfig.model_name || this.defaultModel;
+      const apiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
+      
       // 调用Gemini API
-      const response = await fetch(this.apiEndpoint, {
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,22 +220,45 @@ ${categoryOptions}
    */
   async classifyByKeywords(itemName, userId = null) {
     try {
-      let query = supabase
-        .from('category_keywords')
-        .select(`
-          *,
-          categories!inner(*)
-        `);
+      let keywords = [];
       
-      // 如果提供了用户ID，只查询该用户的分类
+      // 如果提供了用户ID，先尝试查询该用户的分类
       if (userId) {
-        query = query.eq('categories.user_id', userId);
+        const { data: userKeywords, error: userError } = await supabase
+          .from('category_keywords')
+          .select(`
+            *,
+            categories!inner(*)
+          `)
+          .eq('categories.user_id', userId);
+          
+        if (!userError && userKeywords && userKeywords.length > 0) {
+          keywords = userKeywords;
+        }
       }
       
-      const { data: keywords, error } = await query;
+      // 如果没有找到用户专属数据，回退到查询所有关键词数据
+      if (keywords.length === 0) {
+        const { data: allKeywords, error: allError } = await supabase
+          .from('category_keywords')
+          .select(`
+            *,
+            categories!inner(*)
+          `);
+          
+        if (allError) {
+          console.error('Error fetching keywords:', allError);
+          return {
+            success: false,
+            confidence: 0,
+            suggestedCategory: null
+          };
+        }
+        
+        keywords = allKeywords || [];
+      }
 
-      if (error) {
-        console.error('Error fetching keywords:', error);
+      if (keywords.length === 0) {
         return {
           success: false,
           confidence: 0,

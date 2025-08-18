@@ -30,7 +30,9 @@ import {
   Email,
   Language,
   Close,
+  Speed,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -39,8 +41,10 @@ function Account() {
   const { themeMode, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { language, changeLanguage, t } = useLanguage();
+  const navigate = useNavigate();
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(language);
+  const [privacyExpanded, setPrivacyExpanded] = useState(false);
 
   const languages = [
     { code: 'zh-CN', name: '简体中文', flag: '🇨🇳' },
@@ -116,6 +120,8 @@ function Account() {
       icon: <Security />,
       primary: t('privacySecurity'),
       secondary: t('dataProtectionSecuritySettings'),
+      onClick: () => setPrivacyExpanded(!privacyExpanded),
+      expandable: true,
     },
     {
       icon: <Info />,
@@ -254,6 +260,46 @@ function Account() {
                     </ListItemSecondaryAction>
                   )}
                 </ListItem>
+                
+                {/* 隐私与安全的子选项 */}
+                {item.expandable && item.primary === t('privacySecurity') && privacyExpanded && (
+                  <Box sx={{ ml: 4, mb: 2 }}>
+                    <ListItem
+                       onClick={() => navigate('/speed-test')}
+                       sx={{
+                         borderRadius: 2,
+                         cursor: 'pointer',
+                         '&:hover': {
+                           background: themeMode === 'dark'
+                             ? 'rgba(99, 102, 241, 0.1)'
+                             : 'rgba(0, 122, 255, 0.1)',
+                         },
+                       }}
+                     >
+                      <ListItemIcon
+                        sx={{
+                          color: themeMode === 'dark' ? '#6366f1' : '#007AFF',
+                          minWidth: 40,
+                        }}
+                      >
+                        <Speed />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" fontWeight={500}>
+                            AI模型速度测试
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                            测试不同AI模型的响应速度和准确性
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  </Box>
+                )}
+                
                 {index < settingsItems.length - 1 && (
                   <Divider sx={{ my: 1, opacity: 0.5 }} />
                 )}

@@ -31,6 +31,7 @@ import {
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { fetchGeminiModels, testGeminiConnection } from '../services/geminiApiService';
 
 const ApiConfig = () => {
   const { user } = useAuth();
@@ -44,10 +45,13 @@ const ApiConfig = () => {
   const [formData, setFormData] = useState({
     api_name: 'gemini',
     api_key: '',
+    model_name: 'gemini-2.5-flash-lite',
     is_active: true
   });
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const [testing, setTesting] = useState(false);
+  const [availableModels, setAvailableModels] = useState([]);
+  const [loadingModels, setLoadingModels] = useState(false);
 
   const texts = {
     zh: {
@@ -74,6 +78,11 @@ const ApiConfig = () => {
       saveError: '保存API配置失败',
       deleteError: '删除API配置失败',
       keyRequired: 'API密钥不能为空',
+      modelName: '模型名称',
+      loadModels: '加载模型列表',
+      loadingModels: '正在加载模型...',
+      loadModelsError: '加载模型列表失败',
+      noModelsFound: '未找到可用模型',
       geminiInfo: 'Google Gemini API - 用于智能物品分类',
       securityNote: 'API密钥将加密存储在数据库中，仅您可以访问'
     },
@@ -101,6 +110,11 @@ const ApiConfig = () => {
       saveError: 'Failed to save API configuration',
       deleteError: 'Failed to delete API configuration',
       keyRequired: 'API key is required',
+      modelName: 'Model Name',
+      loadModels: 'Load Models',
+      loadingModels: 'Loading models...',
+      loadModelsError: 'Failed to load models',
+      noModelsFound: 'No models found',
       geminiInfo: 'Google Gemini API - For intelligent item classification',
       securityNote: 'API keys are encrypted and stored securely in the database'
     }
@@ -133,8 +147,39 @@ const ApiConfig = () => {
     }
   };
 
+  const fetchAvailableModels = async (apiKey) => {
+    if (!apiKey || !apiKey.trim()) {
+      setNotification({ open: true, message: t.keyRequired, severity: 'error' });
+      return;
+    }
+
+    try {
+      setLoadingModels(true);
+      const supportedModels = await fetchGeminiModels(apiKey);
+      
+      setAvailableModels(supportedModels);
+      
+      if (supportedModels.length === 0) {
+        setNotification({ open: true, message: t.noModelsFound, severity: 'warning' });
+      } else {
+        setNotification({ 
+          open: true, 
+          message: `成功加载 ${supportedModels.length} 个可用模型`, 
+          severity: 'success' 
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching models:', error);
+      setNotification({ open: true, message: error.message, severity: 'error' });
+      setAvailableModels([]);
+    } finally {
+      setLoadingModels(false);
+    }
+  };
+
   const handleSave = async () => {
-    if (!formData.api_key.trim()) {
+    // 新增配置时必须提供API Key，编辑时可以为空（表示不修改）
+    if (!editingConfig && !formData.api_key.trim()) {
       setNotification({ open: true, message: t.keyRequired, severity: 'error' });
       return;
     }
@@ -142,18 +187,21 @@ const ApiConfig = () => {
     try {
       setSaving(true);
       
-      // 加密API密钥
-      const { data: encryptedData, error: encryptError } = await supabase
-        .rpc('encrypt_api_key', { api_key: formData.api_key });
-      
-      if (encryptError) throw encryptError;
-
-      const configData = {
+      let configData = {
         user_id: user.id,
         api_name: formData.api_name,
-        api_key: encryptedData,
+        model_name: formData.model_name,
         is_active: formData.is_active
       };
+
+      // 只有当提供了新的API Key时才加密并更新
+      if (formData.api_key.trim()) {
+        const { data: encryptedData, error: encryptError } = await supabase
+          .rpc('encrypt_api_key', { api_key: formData.api_key });
+        
+        if (encryptError) throw encryptError;
+        configData.api_key = encryptedData;
+      }
 
       let result;
       if (editingConfig) {
@@ -173,7 +221,7 @@ const ApiConfig = () => {
       setNotification({ open: true, message: t.saveSuccess, severity: 'success' });
       setDialogOpen(false);
       setEditingConfig(null);
-      setFormData({ api_name: 'gemini', api_key: '', is_active: true });
+      setFormData({ api_name: 'gemini', api_key: '', model_name: 'gemini-2.5-flash-lite', is_active: true });
       fetchApiConfigs();
     } catch (error) {
       console.error('Error saving API config:', error);
@@ -208,14 +256,42 @@ const ApiConfig = () => {
     setFormData({
       api_name: config.api_name,
       api_key: '', // 不显示已加密的密钥
+      model_name: config.model_name || 'gemini-2.5-flash-lite',
       is_active: config.is_active
     });
     setDialogOpen(true);
   };
 
+  const handleToggleActive = async (configId, isActive) => {
+    try {
+      const { error } = await supabase
+        .from('api_configs')
+        .update({ is_active: isActive })
+        .eq('id', configId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setNotification({ 
+        open: true, 
+        message: isActive ? '配置已启用' : '配置已禁用', 
+        severity: 'success' 
+      });
+      fetchApiConfigs();
+    } catch (error) {
+      console.error('Error toggling config status:', error);
+      setNotification({ 
+        open: true, 
+        message: '更新配置状态失败', 
+        severity: 'error' 
+      });
+    }
+  };
+
   const handleAddNew = () => {
     setEditingConfig(null);
-    setFormData({ api_name: 'gemini', api_key: '', is_active: true });
+    setFormData({ api_name: 'gemini', api_key: '', model_name: 'gemini-2.5-flash-lite', is_active: true });
+    setAvailableModels([]);
     setDialogOpen(true);
   };
 
@@ -244,17 +320,19 @@ const ApiConfig = () => {
     setTesting(true);
     try {
       // 获取活跃的API配置
-      const { data, error } = await supabase
-        .rpc('get_active_api_config', {
-          user_id_param: user.id,
-          api_name_param: 'gemini'
-        });
+      const { data: configs, error: configError } = await supabase
+        .from('api_configs')
+        .select('id, api_key, model_name')
+        .eq('user_id', user.id)
+        .eq('api_name', 'gemini')
+        .eq('is_active', true)
+        .limit(1);
 
-      if (error) {
-        throw new Error('获取API配置失败: ' + error.message);
+      if (configError) {
+        throw new Error('获取API配置失败: ' + configError.message);
       }
 
-      if (!data || data.length === 0) {
+      if (!configs || configs.length === 0) {
         setNotification({
           open: true,
           message: '未找到活跃的API配置，请先添加并启用API配置',
@@ -263,56 +341,45 @@ const ApiConfig = () => {
         return;
       }
 
-      const apiConfig = data[0];
-      if (!apiConfig.decrypted_key) {
+      const config = configs[0];
+      
+      // 解密API密钥
+      const { data: decryptedKey, error: decryptError } = await supabase
+        .rpc('decrypt_api_key', { encrypted_key: config.api_key });
+
+      if (decryptError || !decryptedKey) {
         setNotification({
           open: true,
-          message: 'API密钥无效或为空',
+          message: 'API密钥解密失败或为空',
           severity: 'error'
         });
         return;
       }
 
-      // 测试API连接
-      const testPrompt = '测试连接';
-      const apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+      // 使用新的测试连接服务
+      let modelName = config.model_name || 'gemini-2.5-flash';
       
-      const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiConfig.decrypted_key,
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: testPrompt
-            }]
-          }]
-        })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = `API调用失败 (${response.status})`;
-        
-        if (response.status === 400) {
-          errorMessage += ': API密钥格式错误或无效';
-        } else if (response.status === 403) {
-          errorMessage += ': API密钥权限不足或已被禁用';
-        } else if (response.status === 429) {
-          errorMessage += ': API调用频率超限';
-        }
-        
-        throw new Error(errorMessage);
+      // 确保模型名称格式正确（不包含models/前缀）
+      if (modelName.startsWith('models/')) {
+        modelName = modelName.replace('models/', '');
       }
-
-      const result = await response.json();
       
-      if (result.candidates && result.candidates.length > 0) {
+      // 调用测试连接服务并获取详细结果
+      const { data, error } = await supabase.functions.invoke('gemini-test', {
+        body: { 
+          apiKey: decryptedKey,
+          modelName: modelName
+        }
+      });
+      
+      if (error) {
+        throw new Error(`连接测试失败: ${error.message}`);
+      }
+      
+      if (data && data.success) {
         // 更新API使用统计
         await supabase.rpc('update_api_usage', {
-          config_id_param: apiConfig.id
+          config_id_param: config.id
         });
         
         setNotification({
@@ -321,7 +388,8 @@ const ApiConfig = () => {
           severity: 'success'
         });
       } else {
-        throw new Error('API响应格式异常');
+        const errorMsg = data?.error || data?.message || '连接测试失败';
+        throw new Error(errorMsg);
       }
 
     } catch (error) {
@@ -386,35 +454,38 @@ const ApiConfig = () => {
                   <ListItem>
                     <ListItemText
                       primary={
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Typography variant="subtitle1">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '1.25rem', fontWeight: 500 }}>
                             {config.api_name === 'gemini' ? '🤖 Google Gemini' : config.api_name}
-                          </Typography>
+                          </span>
                           <FormControlLabel
                             control={
                               <Switch
                                 checked={config.is_active}
                                 size="small"
-                                disabled
+                                onChange={(e) => handleToggleActive(config.id, e.target.checked)}
                               />
                             }
                             label={config.is_active ? '已启用' : '已禁用'}
                             sx={{ ml: 1 }}
                           />
-                        </Box>
+                        </div>
                       }
                       secondary={
-                        <Box>
-                          <Typography variant="body2" color="textSecondary">
+                        <React.Fragment>
+                          <span style={{ display: 'block' }}>
                             {t.usageCount}: {config.usage_count || 0} | 
                             {t.lastUsed}: {config.last_used_at ? new Date(config.last_used_at).toLocaleDateString() : t.never}
-                          </Typography>
+                            {config.model_name && (
+                              <><br />{t.modelName}: {config.model_name}</>
+                            )}
+                          </span>
                           {config.api_name === 'gemini' && (
-                            <Typography variant="caption" color="textSecondary">
+                            <span style={{ fontSize: '0.75rem', color: 'rgba(0, 0, 0, 0.6)', marginTop: '4px', display: 'block' }}>
                               {t.geminiInfo}
-                            </Typography>
+                            </span>
                           )}
-                        </Box>
+                        </React.Fragment>
                       }
                     />
                     <ListItemSecondaryAction>
@@ -482,6 +553,34 @@ const ApiConfig = () => {
                 )
               }}
             />
+
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', mt: 2 }}>
+              <TextField
+                fullWidth
+                label={t.modelName}
+                value={formData.model_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, model_name: e.target.value }))}
+                select={availableModels.length > 0}
+                SelectProps={availableModels.length > 0 ? { native: true } : undefined}
+                helperText={availableModels.length === 0 ? '请先输入API密钥并加载模型列表' : ''}
+              >
+                {availableModels.length > 0 ? (
+                  availableModels.map((model) => (
+                    <option key={model.name} value={model.name}>
+                      {model.displayName}
+                    </option>
+                  ))
+                ) : null}
+              </TextField>
+              <Button
+                variant="outlined"
+                onClick={() => fetchAvailableModels(formData.api_key)}
+                disabled={!formData.api_key.trim() || loadingModels}
+                sx={{ minWidth: 120, height: 56 }}
+              >
+                {loadingModels ? t.loadingModels : t.loadModels}
+              </Button>
+            </Box>
 
             <FormControlLabel
               control={
