@@ -106,10 +106,7 @@ export const createAppTheme = (mode) => createTheme({
       fontWeight: 600,
       letterSpacing: '-0.005em',
     },
-    h6: {
-      fontSize: '1rem',
-      fontWeight: 600,
-    },
+
     body1: {
       fontSize: '1rem',
       lineHeight: 1.5,

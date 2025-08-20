@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import aiClassificationService from '../services/aiClassificationService';
 import CategoryDurationService from '../services/categoryDurationService';
 import AuthComponent from './Auth';
+import XianyuPriceChecker from './XianyuPriceChecker';
 
 import { Dialog, DialogContent } from '@mui/material';
 import {
@@ -286,7 +287,7 @@ const Calculator = () => {
       daysToMeetTarget = 0;
     }
 
-    const calculatedResults = { name, daysInService, actualDailyCost: actualDailyCost.toFixed(2), targetDailyCost: target.toFixed(2), overUnder: (actualDailyCost - target).toFixed(2), daysToMeetTarget };
+    const calculatedResults = { name, daysInService, actualDailyCost: actualDailyCost.toFixed(1), targetDailyCost: target.toFixed(1), overUnder: (actualDailyCost - target).toFixed(1), daysToMeetTarget };
     setResults(calculatedResults);
     setLoading(false);
     
@@ -779,6 +780,16 @@ const Calculator = () => {
                     )}
                   </Button>
                 </Box>
+                
+                {/* 閒魚價格查詢組件 */}
+                {results && (
+                  <Box sx={{ mt: 3 }}>
+                    <XianyuPriceChecker 
+                      currentItemName={results.name} 
+                      currentItemValue={results.currentValue || parseFloat(formState.purchasePrice) || 0} 
+                    />
+                  </Box>
+                )}
               </Box>
             )}
           </CardContent>

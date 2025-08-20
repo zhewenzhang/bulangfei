@@ -17,8 +17,18 @@ import {
   Tabs,
   Tab,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Avatar,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
+import {
+  ShoppingCart,
+  Assessment,
+  TrendingUp,
+  TrendingDown,
+  Inventory
+} from '@mui/icons-material';
 import {
   PieChart,
   Pie,
@@ -35,6 +45,7 @@ import {
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import ShoppingTimeline from './ShoppingTimeline';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -57,6 +68,8 @@ function TabPanel({ children, value, index, ...other }) {
 const Analytics = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [categoryStats, setCategoryStats] = useState([]);
@@ -65,7 +78,10 @@ const Analytics = () => {
     totalPurchaseValue: 0,
     totalCurrentValue: 0,
     totalDepreciation: 0,
-    avgDepreciationRate: 0
+    avgDepreciationRate: 0,
+    totalExpenditure: 0,
+    totalRecovery: 0,
+    netSpending: 0
   });
   const [recentItems, setRecentItems] = useState([]);
   const [error, setError] = useState(null);
@@ -157,12 +173,20 @@ const Analytics = () => {
       const usageRate = totalPurchaseValue > 0 ? (totalTargetConsumption / totalPurchaseValue * 100) : 0;
       const avgDepreciationRate = categoryData?.reduce((sum, cat) => sum + parseFloat(cat.depreciation_rate || 0), 0) / (categoryData?.length || 1) || 0;
 
+      // 計算總開銷（購買價值）、總回收（當前價值）、淨支出（購買價值 - 當前價值）
+      const totalExpenditure = totalPurchaseValue;
+      const totalRecovery = totalTargetConsumption;
+      const netSpending = totalPurchaseValue - totalTargetConsumption;
+
       setTotalStats({
         totalItems,
         totalPurchaseValue,
         totalCurrentValue: totalTargetConsumption,
         totalDepreciation: usageRate,
-        avgDepreciationRate
+        avgDepreciationRate,
+        totalExpenditure,
+        totalRecovery,
+        netSpending
       });
 
     } catch (error) {
@@ -211,74 +235,217 @@ const Analytics = () => {
       </Typography>
 
       <Tabs value={tabValue} onChange={handleTabChange} aria-label="analytics tabs">
+        <Tab label="購物旅程" />
         <Tab label={t('overview')} />
         <Tab label={t('categories')} />
-        <Tab label={t('trends')} />
       </Tabs>
 
       <TabPanel value={tabValue} index={0}>
-        {/* 总览统计卡片 */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={2.4}>
-            <Card>
-              <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  {t('totalItems')}
-                </Typography>
-                <Typography variant="h4">
-                  {totalStats.totalItems}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2.4}>
-            <Card>
-              <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  {t('totalPurchaseValue')}
-                </Typography>
-                <Typography variant="h4">
-                  {formatCurrency(totalStats.totalPurchaseValue)}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2.4}>
-            <Card>
-              <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  {t('totalCurrentValue')}
-                </Typography>
-                <Typography variant="h4">
-                  {formatCurrency(totalStats.totalCurrentValue)}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2.4}>
-            <Card>
-              <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  {t('totalDepreciation')}
-                </Typography>
-                <Typography variant="h4" color="primary">
-                  {formatPercentage(totalStats.totalDepreciation)}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2.4}>
-            <Card>
-              <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  {t('avgDepreciationRate')}
-                </Typography>
-                <Typography variant="h4" color="error">
-                  {formatPercentage(totalStats.avgDepreciationRate)}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+        <ShoppingTimeline />
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={1}>
+        {/* 总览统计卡片 - 移动端显示总开销、总回收、净支出 */}
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          {isMobile ? (
+            <>
+              <Grid item xs={4}>
+                <Card sx={{ 
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(244, 67, 54, 0.05))',
+                  border: '1px solid rgba(244, 67, 54, 0.2)',
+                  borderRadius: 3
+                }}>
+                  <CardContent sx={{ 
+                    py: theme.breakpoints.down('sm') ? 0.8 : 1.5, 
+                    px: theme.breakpoints.down('sm') ? 0.5 : 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                  }}>
+                    <Avatar sx={{ 
+                      bgcolor: 'error.main',
+                      mx: 'auto',
+                      mb: theme.breakpoints.down('sm') ? 0.3 : 1,
+                      width: theme.breakpoints.down('sm') ? 28 : 40,
+                      height: theme.breakpoints.down('sm') ? 28 : 40
+                    }}>
+                      <TrendingDown sx={{ fontSize: theme.breakpoints.down('sm') ? 20 : 20 }} />
+                    </Avatar>
+                    <Typography variant="caption" color="textSecondary" sx={{ 
+                      fontSize: '1rem' 
+                    }}>
+                      {t('totalExpenditure')}
+                    </Typography>
+                    <Typography variant="h6" sx={{ 
+                      color: theme.palette.error.main,
+                      fontWeight: 600,
+                      fontSize: '1rem'
+                    }}>
+                      {formatCurrency(totalStats.totalExpenditure)}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={4}>
+                <Card sx={{ 
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05))',
+                  border: '1px solid rgba(76, 175, 80, 0.2)',
+                  borderRadius: 3
+                }}>
+                  <CardContent sx={{ 
+                    py: theme.breakpoints.down('sm') ? 0.8 : 1.5, 
+                    px: theme.breakpoints.down('sm') ? 0.5 : 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                  }}>
+                    <Avatar sx={{ 
+                      bgcolor: 'success.main',
+                      mx: 'auto',
+                      mb: theme.breakpoints.down('sm') ? 0.5 : 1,
+                      width: theme.breakpoints.down('sm') ? 28 : 40,
+                      height: theme.breakpoints.down('sm') ? 28 : 40
+                    }}>
+                      <TrendingUp sx={{ fontSize: theme.breakpoints.down('sm') ? 16 : 20 }} />
+                    </Avatar>
+                    <Typography variant="caption" color="textSecondary" sx={{ 
+                      fontSize: '1rem' 
+                    }}>
+                      {t('totalRecovery')}
+                    </Typography>
+                    <Typography variant="h6" sx={{ 
+                      color: theme.palette.success.main,
+                      fontWeight: 600,
+                      fontSize: '1rem'
+                    }}>
+                      {formatCurrency(totalStats.totalRecovery)}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={4}>
+                <Card sx={{ 
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.1), rgba(63, 81, 181, 0.05))',
+                  border: '1px solid rgba(63, 81, 181, 0.2)',
+                  borderRadius: 3
+                }}>
+                  <CardContent sx={{ 
+                    py: theme.breakpoints.down('sm') ? 0.8 : 1.5, 
+                    px: theme.breakpoints.down('sm') ? 0.5 : 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                  }}>
+                    <Avatar sx={{ 
+                      bgcolor: 'primary.main',
+                      mx: 'auto',
+                      mb: theme.breakpoints.down('sm') ? 0.5 : 1,
+                      width: theme.breakpoints.down('sm') ? 28 : 40,
+                      height: theme.breakpoints.down('sm') ? 28 : 40
+                    }}>
+                      <ShoppingCart sx={{ fontSize: theme.breakpoints.down('sm') ? 16 : 20 }} />
+                    </Avatar>
+                    <Typography variant="caption" color="textSecondary" sx={{ 
+                      fontSize: '1rem' 
+                    }}>
+                      {t('netSpending')}
+                    </Typography>
+                    <Typography variant="h6" sx={{ 
+                      color: totalStats.netSpending > 0 ? theme.palette.primary.main : theme.palette.success.main,
+                      fontWeight: 600,
+                      fontSize: '1rem'
+                    }}>
+                      {formatCurrency(totalStats.netSpending)}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </>
+          ) : (
+            <>
+              <Grid item xs={4}>
+                <Card sx={{ 
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, rgba(63, 81, 181, 0.1), rgba(63, 81, 181, 0.05))',
+                  border: '1px solid rgba(63, 81, 181, 0.2)',
+                  borderRadius: 3
+                }}>
+                  <CardContent sx={{ 
+                    py: theme.breakpoints.down('sm') ? 0.8 : 1.5, 
+                    px: theme.breakpoints.down('sm') ? 0.5 : 1 
+                  }}>
+                    <Typography variant="caption" color="textSecondary" sx={{ 
+                      fontSize: '1rem' 
+                    }}>
+                      {t('totalItems')}
+                    </Typography>
+                    <Typography variant="h6" sx={{ 
+                      color: theme.palette.primary.main,
+                      fontWeight: 600,
+                      fontSize: '1rem'
+                    }}>
+                      {totalStats.totalItems}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={4}>
+                <Card sx={{ 
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(244, 67, 54, 0.05))',
+                  border: '1px solid rgba(244, 67, 54, 0.2)',
+                  borderRadius: 3
+                }}>
+                  <CardContent sx={{ 
+                    py: theme.breakpoints.down('sm') ? 0.8 : 1.5, 
+                    px: theme.breakpoints.down('sm') ? 0.5 : 1 
+                  }}>
+                    <Typography variant="caption" color="textSecondary" sx={{ 
+                      fontSize: '1rem' 
+                    }}>
+                      {t('totalPurchaseValue')}
+                    </Typography>
+                    <Typography variant="h6" sx={{ 
+                      color: theme.palette.error.main,
+                      fontWeight: 600,
+                      fontSize: '1rem'
+                    }}>
+                      {formatCurrency(totalStats.totalPurchaseValue)}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={4}>
+                <Card sx={{ 
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05))',
+                  border: '1px solid rgba(76, 175, 80, 0.2)',
+                  borderRadius: 3
+                }}>
+                  <CardContent sx={{ 
+                    py: theme.breakpoints.down('sm') ? 0.8 : 1.5, 
+                    px: theme.breakpoints.down('sm') ? 0.5 : 1 
+                  }}>
+                    <Typography variant="caption" color="textSecondary" sx={{ 
+                      fontSize: '1rem' 
+                    }}>
+                      {t('totalCurrentValue')}
+                    </Typography>
+                    <Typography variant="h6" sx={{ 
+                      color: theme.palette.success.main,
+                      fontWeight: 600,
+                      fontSize: '1rem'
+                    }}>
+                      {formatCurrency(totalStats.totalCurrentValue)}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </>
+          )}
         </Grid>
 
         {/* 最近添加的物品 */}
@@ -331,7 +498,7 @@ const Analytics = () => {
         </Card>
       </TabPanel>
 
-      <TabPanel value={tabValue} index={1}>
+      <TabPanel value={tabValue} index={2}>
         <Grid container spacing={3}>
           {/* 分类饼图 */}
           <Grid item xs={12} md={6}>
@@ -457,14 +624,7 @@ const Analytics = () => {
         </Grid>
       </TabPanel>
 
-      <TabPanel value={tabValue} index={2}>
-        <Typography variant="h6" gutterBottom>
-          {t('trends')}
-        </Typography>
-        <Alert severity="info">
-          {t('trendsComingSoon')}
-        </Alert>
-      </TabPanel>
+
       
       {/* 公式说明备注 */}
       <Box sx={{ mt: 4, p: 2, borderTop: '1px solid #e0e0e0' }}>

@@ -9,6 +9,16 @@ const translations = {
     profile: '我的',
     
     // 计算器页面
+    xianyuPriceCheck: '闲鱼二手价格查询',
+    pleaseEnterKeyword: '请输入搜索关键词',
+    searchKeyword: '搜索关键词',
+    search: '搜索',
+    searchResults: '搜索结果',
+    averagePrice: '平均价格',
+    priceRange: '价格区间',
+    itemCount: '商品数量',
+    xianyuItemList: '闲鱼商品列表',
+    
     residualValueCalculator: '残值计算器',
     productName: '商品名称',
     productNamePlaceholder: '请输入商品名称',
@@ -16,8 +26,6 @@ const translations = {
     targetDailyConsumption: '目标日耗',
     targetDailyConsumptionPlaceholder: '请输入目标日耗金额',
     saveAndAnalyze: '保存并分析',
-    
-    // Calculator页面新增
     itemResidualValueManagement: '物品残值管理',
     itemName: '物品名称',
     purchaseDate: '入手日期',
@@ -34,8 +42,8 @@ const translations = {
     exceedsTarget: '超出目标',
     belowTarget: '低于目标',
     differenceFromTarget: '与目标差额',
-    daysToMeetTarget: '还需要 {days} 天可达成目标',
-    targetAchieved: '已达成目标!',
+    daysToMeetTarget: '还需要 {days} 天可達成目标',
+    targetAchieved: '已達成目标!',
     continueUsing: '继续使用以降低日均成本',
     congratulations: '恭喜！您的使用效率很高',
     saving: '保存中...',
@@ -50,20 +58,20 @@ const translations = {
     unknown: '未知',
     
     // History页面新增
-    calculationHistory: '计算历史',
+    calculationHistory: '购物清单',
     historyRecords: '历史计算记录 ({count} 条记录)',
     totalConsumption: '累计消费',
     totalExpenditure: '累计消费',
     averageDailyCost: '平均日耗',
-    achievedCount: '已达成数量',
-    estimatedAchievement: '预计达成',
-    allAchieved: '全部达成',
-      achievementStatus: '是否达成',
-      achieved: '已达成',
-      daysToAchieve: '天后达成',
-      days: '天',
-      loading: '加载中...',
-      loadFailed: '加载失败',
+    achievedCount: '達成數量',
+    estimatedAchievement: '预计達成',
+    allAchieved: '全部達成',
+    achievementStatus: '是否達成',
+    achieved: '已達成',
+    daysToAchieve: '天後達成',
+    days: '天',
+    loading: '加载中...',
+    loadFailed: '加载失败',
     totalItems: '物品总数',
     itemNameCol: '物品名称',
     targetDailyCostCol: '目标日耗',
@@ -187,6 +195,16 @@ const translations = {
     profile: '我的',
     
     // 計算器頁面
+    xianyuPriceCheck: '閒魚二手價格查詢',
+    pleaseEnterKeyword: '請輸入搜索關鍵詞',
+    searchKeyword: '搜索關鍵詞',
+    search: '搜索',
+    searchResults: '搜索結果',
+    averagePrice: '平均價格',
+    priceRange: '價格區間',
+    itemCount: '商品數量',
+    xianyuItemList: '閒魚商品列表',
+    
     residualValueCalculator: '殘值計算器',
     productName: '商品名稱',
     productNamePlaceholder: '請輸入商品名稱',
@@ -228,12 +246,14 @@ const translations = {
     unknown: '未知',
     
     // History頁面新增
-    calculationHistory: '計算歷史',
+    calculationHistory: '購物清單',
     historyRecords: '歷史計算記錄 ({count} 條記錄)',
     totalConsumption: '累計消費',
-    totalExpenditure: '累計消費',
+    totalExpenditure: '總開銷',
+    totalRecovery: '總回收',
+    netSpending: '淨支出',
     averageDailyCost: '平均日耗',
-    achievedCount: '已達成數量',
+    achievedCount: '達成數量',
     estimatedAchievement: '預計達成',
     allAchieved: '全部達成',
     achievementStatus: '是否達成',
@@ -361,6 +381,17 @@ const translations = {
     calculate: 'Calculate',
     shoppingAnalysis: 'Shopping Analysis',
     profile: 'Profile',
+    
+    // Xianyu Price Check
+    xianyuPriceCheck: 'Xianyu Second-hand Price Check',
+    pleaseEnterKeyword: 'Please enter search keyword',
+    searchKeyword: 'Search Keyword',
+    search: 'Search',
+    searchResults: 'Search Results',
+    averagePrice: 'Average Price',
+    priceRange: 'Price Range',
+    itemCount: 'Item Count',
+    xianyuItemList: 'Xianyu Item List',
     
     // Calculator Page
     residualValueCalculator: 'Residual Value Calculator',
@@ -540,6 +571,17 @@ const translations = {
     shoppingAnalysis: 'ショッピング分析',
     profile: 'プロフィール',
     
+    // 閑魚価格チェック
+    xianyuPriceCheck: '閑魚中古価格チェック',
+    pleaseEnterKeyword: '検索キーワードを入力してください',
+    searchKeyword: '検索キーワード',
+    search: '検索',
+    searchResults: '検索結果',
+    averagePrice: '平均価格',
+    priceRange: '価格範囲',
+    itemCount: '商品数',
+    xianyuItemList: '閑魚商品リスト',
+    
     // 計算機ページ
     residualValueCalculator: '残存価値計算機',
     productName: '商品名',
@@ -671,7 +713,18 @@ const LanguageContext = createContext();
 
 // 语言上下文提供者
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState('zh-CN');
+  // 根據瀏覽器語言環境自動設置默認語言
+  const getDefaultLanguage = () => {
+    const browserLang = navigator.language || navigator.userLanguage;
+    if (browserLang.includes('zh-TW') || browserLang.includes('zh-Hant')) {
+      return 'zh-TW';
+    } else if (browserLang.includes('ja')) {
+      return 'ja';
+    }
+    return 'zh-CN';
+  };
+  
+  const [language, setLanguage] = useState(getDefaultLanguage());
 
   const changeLanguage = (newLanguage) => {
     setLanguage(newLanguage);
@@ -693,11 +746,16 @@ export const LanguageProvider = ({ children }) => {
     return text;
   };
 
-  // 从本地存储恢复语言设置
+  // 从本地存储恢复语言设置，如果沒有則使用瀏覽器語言環境
   useEffect(() => {
     const savedLanguage = localStorage.getItem('app_language');
     if (savedLanguage && translations[savedLanguage]) {
       setLanguage(savedLanguage);
+    } else {
+      // 如果沒有保存的語言設置，使用瀏覽器語言環境並保存
+      const defaultLang = getDefaultLanguage();
+      setLanguage(defaultLang);
+      localStorage.setItem('app_language', defaultLang);
     }
   }, []);
 

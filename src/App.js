@@ -178,7 +178,7 @@ function MainContent({ themeMode, showNetworkAlert, handleNetworkAlertClose, han
         >
           <BottomNavigationAction label={t('calculate')} icon={<CalculateIcon />} />
           <BottomNavigationAction label={t('shoppingAnalysis')} icon={<HistoryIcon />} />
-          <BottomNavigationAction label="分析" icon={<AnalyticsIcon />} />
+          <BottomNavigationAction label="購物旅程" icon={<AnalyticsIcon />} />
           <BottomNavigationAction label={t('profile')} icon={<AccountCircleIcon />} />
         </BottomNavigation>
       </AppBar>

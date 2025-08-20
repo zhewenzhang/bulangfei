@@ -457,7 +457,7 @@ ${categoryOptions}
   // 格式化持续时间
   const formatDuration = (ms) => {
     if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
+    return `${(ms / 1000).toFixed(1)}s`;
   };
 
   return (
