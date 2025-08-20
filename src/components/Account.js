@@ -36,6 +36,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import logger from '../utils/logger';
 
 function Account() {
   const { themeMode, toggleTheme } = useTheme();
@@ -75,7 +76,7 @@ function Account() {
     try {
       await signOut();
     } catch (error) {
-      console.error('Error signing out:', error);
+      logger.error('Error signing out:', error);
     }
   };
 

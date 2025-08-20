@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import logger from '../utils/logger';
 import {
   Box,
   Card,
@@ -43,7 +44,7 @@ async function fetchRecords(userId) {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching data:', error);
+    logger.error('Error fetching data:', error);
     throw error;
   }
   return data;
@@ -163,7 +164,7 @@ const History = () => {
       
       setEditDialogOpen(false);
     } catch (error) {
-      console.error('Error updating record:', error);
+      logger.error('Error updating record:', error);
       setNotification({
         open: true,
         message: '更新失败：' + error.message,
@@ -242,7 +243,7 @@ const History = () => {
 
       handleSellClose();
     } catch (error) {
-      console.error('Error saving sale record:', error);
+      logger.error('Error saving sale record:', error);
       setNotification({
         open: true,
         message: '保存失败：' + error.message,

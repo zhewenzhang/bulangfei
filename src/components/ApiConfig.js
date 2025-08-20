@@ -32,6 +32,7 @@ import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { fetchGeminiModels, testGeminiConnection } from '../services/geminiApiService';
+import logger from '../utils/logger';
 
 const ApiConfig = () => {
   const { user } = useAuth();
@@ -140,7 +141,7 @@ const ApiConfig = () => {
       if (error) throw error;
       setApiConfigs(data || []);
     } catch (error) {
-      console.error('Error fetching API configs:', error);
+      logger.error('Error fetching API configs:', error);
       setNotification({ open: true, message: t.loadError, severity: 'error' });
     } finally {
       setLoading(false);
@@ -169,7 +170,7 @@ const ApiConfig = () => {
         });
       }
     } catch (error) {
-      console.error('Error fetching models:', error);
+      logger.error('Error fetching models:', error);
       setNotification({ open: true, message: error.message, severity: 'error' });
       setAvailableModels([]);
     } finally {
@@ -224,7 +225,7 @@ const ApiConfig = () => {
       setFormData({ api_name: 'gemini', api_key: '', model_name: 'gemini-2.5-flash-lite', is_active: true });
       fetchApiConfigs();
     } catch (error) {
-      console.error('Error saving API config:', error);
+      logger.error('Error saving API config:', error);
       setNotification({ open: true, message: t.saveError, severity: 'error' });
     } finally {
       setSaving(false);
@@ -246,7 +247,7 @@ const ApiConfig = () => {
       setNotification({ open: true, message: t.deleteSuccess, severity: 'success' });
       fetchApiConfigs();
     } catch (error) {
-      console.error('Error deleting API config:', error);
+      logger.error('Error deleting API config:', error);
       setNotification({ open: true, message: t.deleteError, severity: 'error' });
     }
   };
@@ -279,7 +280,7 @@ const ApiConfig = () => {
       });
       fetchApiConfigs();
     } catch (error) {
-      console.error('Error toggling config status:', error);
+      logger.error('Error toggling config status:', error);
       setNotification({ 
         open: true, 
         message: '更新配置状态失败', 
@@ -393,7 +394,7 @@ const ApiConfig = () => {
       }
 
     } catch (error) {
-      console.error('API连接测试失败:', error);
+      logger.error('API连接测试失败:', error);
       setNotification({
         open: true,
         message: `❌ API连接测试失败: ${error.message}`,

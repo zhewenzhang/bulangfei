@@ -46,6 +46,7 @@ import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import ShoppingTimeline from './ShoppingTimeline';
+import logger from '../utils/logger';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -190,7 +191,7 @@ const Analytics = () => {
       });
 
     } catch (error) {
-      console.error('Error fetching analytics data:', error);
+      logger.error('Error fetching analytics data:', error);
       setError(error.message);
     } finally {
       setLoading(false);

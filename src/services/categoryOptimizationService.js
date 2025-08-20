@@ -1,17 +1,18 @@
 import { supabase } from '../supabaseClient';
+import logger from '../utils/logger';
 
 class CategoryOptimizationService {
   // 分析用户的分类使用情况
   async analyzeUserCategories(userId) {
     try {
-      console.log('分析用户分类，用户ID:', userId);
+      logger.debug('分析用户分类，用户ID:', userId);
       // 获取用户的所有分类
       const { data: categories, error: categoriesError } = await supabase
         .from('categories')
         .select('*')
         .eq('user_id', userId);
 
-      console.log('获取分类结果:', { categories, categoriesError });
+      logger.debug('获取分类结果:', { categories, categoriesError });
       if (categoriesError) throw categoriesError;
 
       // 获取用户的计算记录，统计每个分类的使用频率
@@ -21,7 +22,7 @@ class CategoryOptimizationService {
         .eq('user_id', userId)
         .not('category_id', 'is', null);
 
-      console.log('获取计算记录结果:', { calculations, calculationsError });
+      logger.debug('获取计算记录结果:', { calculations, calculationsError });
       if (calculationsError) throw calculationsError;
 
       // 统计分类使用情况
@@ -52,7 +53,7 @@ class CategoryOptimizationService {
         totalCalculations: calculations.length
       };
     } catch (error) {
-      console.error('Error analyzing categories:', error);
+      logger.error('Error analyzing categories:', error);
       throw error;
     }
   }
@@ -60,9 +61,9 @@ class CategoryOptimizationService {
   // 生成优化建议
   async generateOptimizationSuggestions(userId) {
     try {
-      console.log('开始AI优化分析，用户ID:', userId);
+      logger.debug('开始AI优化分析，用户ID:', userId);
       const analysis = await this.analyzeUserCategories(userId);
-      console.log('分析结果:', analysis);
+      logger.debug('分析结果:', analysis);
       const suggestions = [];
 
       // 1. 检查未使用的分类
@@ -148,7 +149,7 @@ class CategoryOptimizationService {
         analysis
       };
     } catch (error) {
-      console.error('Error generating suggestions:', error);
+      logger.error('Error generating suggestions:', error);
       throw error;
     }
   }
@@ -295,7 +296,7 @@ class CategoryOptimizationService {
           throw new Error('Unknown suggestion action');
       }
     } catch (error) {
-      console.error('Error applying suggestion:', error);
+      logger.error('Error applying suggestion:', error);
       throw error;
     }
   }

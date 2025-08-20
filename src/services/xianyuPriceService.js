@@ -1,5 +1,6 @@
 // 閒魚價格查詢服務
 import { supabase } from '../supabaseClient';
+import logger from '../utils/logger';
 
 /**
  * 查詢閒魚平台上商品的二手價格
@@ -18,7 +19,7 @@ export const fetchXianyuPrices = async (keyword) => {
     });
 
     if (error) {
-      console.error('Supabase function error:', error);
+      logger.error('Supabase function error:', error);
       throw new Error(`獲取閒魚價格失敗: ${error.message}`);
     }
 
@@ -28,7 +29,7 @@ export const fetchXianyuPrices = async (keyword) => {
 
     return data.data;
   } catch (error) {
-    console.error('Error fetching Xianyu prices:', error);
+    logger.error('Error fetching Xianyu prices:', error);
     throw error;
   }
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import categoryOptimizationService from '../services/categoryOptimizationService';
+import logger from '../utils/logger';
 import {
   Box,
   Button,
@@ -39,7 +40,7 @@ const CategoryManager = () => {
 
   // 添加用户登录检查
   useEffect(() => {
-    console.log('CategoryManager mounted, user:', user);
+    logger.debug('CategoryManager mounted, user:', user);
   }, [user]);
   const [editingCategory, setEditingCategory] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -102,7 +103,7 @@ const CategoryManager = () => {
       if (error) throw error;
       setCategories(data || []);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      logger.error('Error fetching categories:', error);
       setNotification({ open: true, message: '获取分类失败', severity: 'error' });
     } finally {
       setLoading(false);
@@ -134,7 +135,7 @@ const CategoryManager = () => {
       setShowAddDialog(false);
       setNotification({ open: true, message: '分类添加成功', severity: 'success' });
     } catch (error) {
-      console.error('Error adding category:', error);
+      logger.error('Error adding category:', error);
       setNotification({ open: true, message: '添加分类失败', severity: 'error' });
     }
   };
@@ -154,7 +155,7 @@ const CategoryManager = () => {
       setEditingCategory(null);
       setNotification({ open: true, message: '分类更新成功', severity: 'success' });
     } catch (error) {
-      console.error('Error updating category:', error);
+      logger.error('Error updating category:', error);
       setNotification({ open: true, message: '更新分类失败', severity: 'error' });
     }
   };
@@ -173,20 +174,20 @@ const CategoryManager = () => {
       setCategories(prev => prev.filter(cat => cat.id !== categoryId));
       setNotification({ open: true, message: '分类删除成功', severity: 'success' });
     } catch (error) {
-      console.error('Error deleting category:', error);
+      logger.error('Error deleting category:', error);
       setNotification({ open: true, message: '删除分类失败', severity: 'error' });
     }
   };
 
   const handleAIOptimize = async () => {
-    console.log('AI优化按钮被点击，用户信息:', user);
+    logger.debug('AI优化按钮被点击，用户信息:', user);
     if (!user?.id) {
-      console.log('用户未登录或用户ID不存在');
+      logger.warn('用户未登录或用户ID不存在');
       setNotification({ open: true, message: '请先登录', severity: 'warning' });
       return;
     }
 
-    console.log('开始AI优化，用户ID:', user.id);
+    logger.debug('开始AI优化，用户ID:', user.id);
     setOptimizing(true);
     try {
       const result = await categoryOptimizationService.generateOptimizationSuggestions(user.id);
@@ -199,7 +200,7 @@ const CategoryManager = () => {
         setNotification({ open: true, message: `AI分析完成，发现 ${result.suggestions.length} 条优化建议`, severity: 'info' });
       }
     } catch (error) {
-      console.error('AI优化失败:', error);
+      logger.error('AI优化失败:', error);
       setNotification({ open: true, message: 'AI优化失败，请稍后重试', severity: 'error' });
     } finally {
       setOptimizing(false);
@@ -207,10 +208,10 @@ const CategoryManager = () => {
   };
 
   const handleAutoClassify = async () => {
-    console.log('开始AI自动分类，用户ID:', user?.id);
+    logger.debug('开始AI自动分类，用户ID:', user?.id);
     
     if (!user?.id) {
-      console.log('用户未登录');
+      logger.warn('用户未登录');
       setNotification({
         open: true,
         message: '请先登录后再使用AI自动分类功能',
@@ -222,7 +223,7 @@ const CategoryManager = () => {
     setAutoClassifying(true);
     try {
       // 获取未分类的计算记录
-      console.log('正在获取未分类的计算记录...');
+      logger.debug('正在获取未分类的计算记录...');
       const { data: unclassifiedCalculations, error: calcError } = await supabase
         .from('calculations')
         .select('*')
@@ -230,14 +231,14 @@ const CategoryManager = () => {
         .is('category_id', null);
 
       if (calcError) {
-        console.error('获取未分类记录失败:', calcError);
+        logger.error('获取未分类记录失败:', calcError);
         throw calcError;
       }
 
-      console.log('找到未分类记录数量:', unclassifiedCalculations?.length || 0);
+      logger.debug('找到未分类记录数量:', unclassifiedCalculations?.length || 0);
       
       if (!unclassifiedCalculations || unclassifiedCalculations.length === 0) {
-        console.log('没有未分类记录');
+        logger.debug('没有未分类记录');
         setNotification({
           open: true,
           message: '没有找到需要分类的记录',
@@ -247,27 +248,27 @@ const CategoryManager = () => {
       }
 
       // 获取现有分类
-      console.log('正在获取现有分类...');
+      logger.debug('正在获取现有分类...');
       const { data: existingCategories, error: catError } = await supabase
         .from('categories')
         .select('*')
         .eq('user_id', user.id);
 
       if (catError) {
-        console.error('获取现有分类失败:', catError);
+        logger.error('获取现有分类失败:', catError);
         throw catError;
       }
 
-      console.log('现有分类数量:', existingCategories?.length || 0);
+      logger.debug('现有分类数量:', existingCategories?.length || 0);
       
       let processedCount = 0;
       let createdCategories = [];
 
       // 为每个未分类的记录进行AI分类
-      console.log('开始处理未分类记录...');
+      logger.debug('开始处理未分类记录...');
       for (const calculation of unclassifiedCalculations) {
         try {
-          console.log('处理记录:', calculation.name);
+          logger.debug('处理记录:', calculation.name);
           // 基于物品名称智能匹配或创建分类
           const itemName = calculation.name.toLowerCase();
           let targetCategory = null;
@@ -319,7 +320,7 @@ const CategoryManager = () => {
                 .single();
 
               if (createError) {
-                console.error('创建分类失败:', createError);
+                logger.error('创建分类失败:', createError);
                 continue;
               }
 
@@ -344,7 +345,7 @@ const CategoryManager = () => {
             }
           }
         } catch (error) {
-          console.error('处理记录失败:', calculation.name, error);
+          logger.error('处理记录失败:', calculation.name, error);
         }
       }
 
@@ -358,7 +359,7 @@ const CategoryManager = () => {
       });
 
     } catch (error) {
-      console.error('AI自动分类失败:', error);
+      logger.error('AI自动分类失败:', error);
       setNotification({
         open: true,
         message: 'AI自动分类失败，请稍后重试',
@@ -378,7 +379,7 @@ const CategoryManager = () => {
       // 移除已应用的建议
       setOptimizationSuggestions(prev => prev.filter(s => s !== suggestion));
     } catch (error) {
-      console.error('应用建议失败:', error);
+      logger.error('应用建议失败:', error);
       setNotification({ open: true, message: '应用建议失败', severity: 'error' });
     }
   };

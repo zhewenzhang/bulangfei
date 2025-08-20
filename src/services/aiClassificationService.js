@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient';
+import logger from '../utils/logger';
 
 /**
  * AI分类服务
@@ -25,13 +26,13 @@ class AIClassificationService {
         });
 
       if (error) {
-        console.error('Error fetching API config:', error);
+        logger.error('Error fetching API config:', error);
         return null;
       }
 
       return data && data.length > 0 ? data[0] : null;
     } catch (error) {
-      console.error('Error in getActiveApiConfig:', error);
+      logger.error('Error in getActiveApiConfig:', error);
       return null;
     }
   }
@@ -46,7 +47,7 @@ class AIClassificationService {
         config_id_param: configId
       });
     } catch (error) {
-      console.error('Error updating API usage:', error);
+      logger.error('Error updating API usage:', error);
     }
   }
 
@@ -62,13 +63,13 @@ class AIClassificationService {
         .order('name');
 
       if (error) {
-        console.error('Error fetching categories:', error);
+        logger.error('Error fetching categories:', error);
         return [];
       }
 
       return data || [];
     } catch (error) {
-      console.error('Error in getCategories:', error);
+      logger.error('Error in getCategories:', error);
       return [];
     }
   }
@@ -146,7 +147,7 @@ ${categoryOptions}
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Gemini API error:', errorText);
+        logger.error('Gemini API error:', errorText);
         return {
           success: false,
           error: `API调用失败: ${response.status}`,
@@ -176,7 +177,7 @@ ${categoryOptions}
                 try {
                   await this.updateApiUsage(apiConfig.id);
                 } catch (usageError) {
-                  console.warn('更新API使用统计失败，但不影响分类功能:', usageError);
+                  logger.warn('更新API使用统计失败，但不影响分类功能:', usageError);
                 }
                 
                 return {
@@ -189,7 +190,7 @@ ${categoryOptions}
               }
             }
           } catch (parseError) {
-            console.error('Error parsing AI response:', parseError);
+            logger.error('Error parsing AI response:', parseError);
           }
         }
       }
@@ -202,7 +203,7 @@ ${categoryOptions}
       };
 
     } catch (error) {
-      console.error('Error in AI classification:', error);
+      logger.error('Error in AI classification:', error);
       return {
         success: false,
         error: error.message || '分类失败',
@@ -247,7 +248,7 @@ ${categoryOptions}
           `);
           
         if (allError) {
-          console.error('Error fetching keywords:', allError);
+          logger.error('Error fetching keywords:', allError);
           return {
             success: false,
             confidence: 0,
@@ -318,7 +319,7 @@ ${categoryOptions}
       };
 
     } catch (error) {
-      console.error('Error in keyword classification:', error);
+      logger.error('Error in keyword classification:', error);
       return {
         success: false,
         confidence: 0,
@@ -366,7 +367,7 @@ ${categoryOptions}
       };
 
     } catch (error) {
-      console.error('Error in hybrid classification:', error);
+      logger.error('Error in hybrid classification:', error);
       return {
         success: false,
         confidence: 0,

@@ -43,6 +43,7 @@ import aiClassificationService from '../services/aiClassificationService';
 import { fetchGeminiModels } from '../services/geminiApiService';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../supabaseClient';
+import logger from '../utils/logger';
 
 const ModelSpeedTest = () => {
   const { user } = useAuth();
@@ -83,7 +84,7 @@ const ModelSpeedTest = () => {
           .single();
 
         if (error && error.code !== 'PGRST116') {
-          console.error('Error loading API config:', error);
+          logger.error('Error loading API config:', error);
           return;
         }
 
@@ -93,17 +94,17 @@ const ModelSpeedTest = () => {
             .rpc('decrypt_api_key', { encrypted_key: data.api_key });
           
           if (decryptError) {
-            console.error('Error decrypting API key:', decryptError);
+            logger.error('Error decrypting API key:', decryptError);
             return;
           }
           
           setApiKey(decryptedData);
           setTempApiKey(decryptedData);
           await loadModels(decryptedData);
-          console.log('API配置加载成功');
+          // API配置加载成功
         }
       } catch (error) {
-        console.error('加载API配置失败:', error);
+        // 加载API配置失败
       }
     };
 
@@ -125,7 +126,6 @@ const ModelSpeedTest = () => {
         .rpc('encrypt_api_key', { api_key: tempApiKey });
       
       if (encryptError) {
-        console.error('Error encrypting API key:', encryptError);
         setNotification({ open: true, message: '加密API密钥失败', severity: 'error' });
         return;
       }
@@ -164,7 +164,6 @@ const ModelSpeedTest = () => {
       }
 
       if (result.error) {
-        console.error('Error saving API config:', result.error);
         setNotification({ open: true, message: '保存API配置失败', severity: 'error' });
         return;
       }
@@ -176,7 +175,6 @@ const ModelSpeedTest = () => {
       // 重新加载模型
       await loadModels(tempApiKey);
     } catch (error) {
-      console.error('Error in saveApiConfig:', error);
       setNotification({ open: true, message: '保存API配置时发生错误', severity: 'error' });
     } finally {
       setSavingConfig(false);
@@ -185,27 +183,23 @@ const ModelSpeedTest = () => {
 
   // 加载可用模型
   const loadModels = async (key) => {
-    console.log('开始加载模型，API密钥长度:', key ? key.length : 0);
+    // 开始加载模型
     setLoadingModels(true);
     try {
       const models = await fetchGeminiModels(key);
-      console.log('成功获取模型列表:', models);
       setAvailableModels(models);
       // 默认选择前3个模型进行对比
       if (models.length > 0) {
         const defaultSelected = models.slice(0, Math.min(3, models.length)).map(m => m.name);
-        console.log('默认选择的模型:', defaultSelected);
         setSelectedModels(defaultSelected);
       }
     } catch (error) {
-      console.error('加载模型失败:', error);
       // 使用默认模型
       const defaultModels = [
         { name: 'gemini-2.0-flash-exp', displayName: 'Gemini 2.0 Flash (实验版)' },
         { name: 'gemini-1.5-pro', displayName: 'Gemini 1.5 Pro' },
         { name: 'gemini-1.5-flash', displayName: 'Gemini 1.5 Flash' }
       ];
-      console.log('使用默认模型列表:', defaultModels);
       setAvailableModels(defaultModels);
       setSelectedModels([defaultModels[0].name]); // 默认选择第一个模型
     } finally {
@@ -370,7 +364,7 @@ ${categoryOptions}
       setCurrentTest(null);
 
     } catch (error) {
-      console.error('测试出错:', error);
+      // 测试出错
       setCurrentTest({
         itemName: testItemName,
         status: 'error',
@@ -404,7 +398,7 @@ ${categoryOptions}
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     } catch (error) {
-      console.error('批量测试出错:', error);
+      // 批量测试出错
     } finally {
       setIsRunning(false);
       setCurrentTest(null);

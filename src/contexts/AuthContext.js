@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
+import logger from '../utils/logger';
 
 const AuthContext = createContext({});
 
@@ -19,7 +20,7 @@ export const AuthProvider = ({ children }) => {
 
   // 网络错误处理函数
   const handleNetworkError = (error) => {
-    console.error('Network error:', error);
+    logger.error('Network error:', error);
     if (error.message?.includes('ERR_NETWORK_CHANGED') || 
         error.message?.includes('fetch') ||
         error.code === 'NETWORK_ERROR') {
@@ -76,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     // 监听认证状态变化
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session);
+        logger.debug('Auth state changed:', event, session);
         setUser(session?.user ?? null);
         setLoading(false);
         

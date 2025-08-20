@@ -1,5 +1,6 @@
 // Gemini API 服务
 import { supabase } from '../supabaseClient';
+import logger from '../utils/logger';
 
 /**
  * 通过后端代理获取可用的Gemini模型列表
@@ -18,7 +19,7 @@ export const fetchGeminiModels = async (apiKey) => {
     });
 
     if (error) {
-      console.error('Supabase function error:', error);
+      logger.error('Supabase function error:', error);
       throw new Error(`获取模型失败: ${error.message}`);
     }
 
@@ -38,7 +39,7 @@ export const fetchGeminiModels = async (apiKey) => {
 
     return supportedModels;
   } catch (error) {
-    console.error('Error fetching Gemini models:', error);
+    logger.error('Error fetching Gemini models:', error);
     throw error;
   }
 };
@@ -59,13 +60,13 @@ export const testGeminiConnection = async (apiKey, modelName = 'gemini-2.5-flash
     });
 
     if (error) {
-      console.error('Connection test error:', error);
+      logger.error('Connection test error:', error);
       return false;
     }
 
     return data && data.success;
   } catch (error) {
-    console.error('Error testing Gemini connection:', error);
+    logger.error('Error testing Gemini connection:', error);
     return false;
   }
 };

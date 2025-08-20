@@ -6,6 +6,7 @@ import aiClassificationService from '../services/aiClassificationService';
 import CategoryDurationService from '../services/categoryDurationService';
 import AuthComponent from './Auth';
 import XianyuPriceChecker from './XianyuPriceChecker';
+import logger from '../utils/logger';
 
 import { Dialog, DialogContent } from '@mui/material';
 import {
@@ -69,7 +70,7 @@ const Calculator = () => {
       if (error) throw error;
       setCategories(data || []);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      logger.error('Error fetching categories:', error);
     }
   };
 
@@ -94,7 +95,7 @@ const Calculator = () => {
       
       return result;
     } catch (error) {
-      console.error('Error in item classification:', error);
+      logger.error('Error in item classification:', error);
       return {
         success: false,
         confidence: 0,
@@ -113,12 +114,12 @@ const Calculator = () => {
       return;
     }
     
-    console.log('开始执行AI分类，物品名称:', itemName);
+    logger.debug('开始执行AI分类，物品名称:', itemName);
     const result = await classifyItem(itemName, userId);
-    console.log('分类结果:', result);
+    logger.debug('分类结果:', result);
     
     if (result && result.success && result.suggestedCategory) {
-      console.log('设置分类建议:', result.suggestedCategory);
+      logger.debug('设置分类建议:', result.suggestedCategory);
       setSuggestedCategories([result]);
       
       // 如果置信度高于0.7，自动选择分类
@@ -127,7 +128,7 @@ const Calculator = () => {
         // useEffect会自动处理目标日耗计算，无需手动调用
       }
     } else {
-      console.log('分类失败或无结果:', result);
+      logger.debug('分类失败或无结果:', result);
       setSuggestedCategories([]);
     }
   }, []);
@@ -146,26 +147,26 @@ const Calculator = () => {
   // 处理输入框失去焦点时的AI分析
   const handleNameBlur = (event) => {
     const { value } = event.target;
-    console.log('handleNameBlur 触发，输入值:', value, '用户:', user);
+    logger.debug('handleNameBlur 触发，输入值:', value, '用户:', user);
     if (value.trim().length >= 2 && user) {
-      console.log('满足条件，开始AI分析');
+      logger.debug('满足条件，开始AI分析');
       performClassification(value, user.id);
     } else {
-      console.log('不满足条件：输入长度:', value.trim().length, '用户存在:', !!user);
+      logger.debug('不满足条件：输入长度:', value.trim().length, '用户存在:', !!user);
     }
   };
   
   // 处理回车键触发AI分析
   const handleNameKeyPress = (event) => {
-    console.log('handleNameKeyPress 触发，按键:', event.key);
+    logger.debug('handleNameKeyPress 触发，按键:', event.key);
     if (event.key === 'Enter') {
       const { value } = event.target;
-      console.log('回车键触发，输入值:', value, '用户:', user);
+      logger.debug('回车键触发，输入值:', value, '用户:', user);
       if (value.trim().length >= 2 && user) {
-        console.log('满足条件，开始AI分析');
+        logger.debug('满足条件，开始AI分析');
         performClassification(value, user.id);
       } else {
-        console.log('不满足条件：输入长度:', value.trim().length, '用户存在:', !!user);
+        logger.debug('不满足条件：输入长度:', value.trim().length, '用户存在:', !!user);
       }
     }
   };
@@ -175,30 +176,30 @@ const Calculator = () => {
 
   // 自动计算目标日耗
   const autoCalculateTarget = useCallback((purchasePrice, categoryId) => {
-    console.log('autoCalculateTarget called:', { purchasePrice, categoryId, autoCalculateEnabled, manualTargetEdit });
+    logger.debug('autoCalculateTarget called:', { purchasePrice, categoryId, autoCalculateEnabled, manualTargetEdit });
     
     if (!autoCalculateEnabled || manualTargetEdit || !purchasePrice || !categoryId) {
-      console.log('autoCalculateTarget early return:', { autoCalculateEnabled, manualTargetEdit, purchasePrice, categoryId });
+      logger.debug('autoCalculateTarget early return:', { autoCalculateEnabled, manualTargetEdit, purchasePrice, categoryId });
       return;
     }
 
     const price = parseFloat(purchasePrice);
     if (isNaN(price) || price <= 0) {
-      console.log('Invalid price:', price);
+      logger.debug('Invalid price:', price);
       return;
     }
 
     // 找到对应的分类
     const category = categories.find(cat => cat.id === categoryId);
-    console.log('Found category:', category);
+    logger.debug('Found category:', category);
     if (!category) {
-      console.log('Category not found for id:', categoryId);
+      logger.debug('Category not found for id:', categoryId);
       return;
     }
 
     // 使用CategoryDurationService计算目标日耗
     const result = CategoryDurationService.autoCalculateTarget(price, category.name);
-    console.log('Calculation result:', result);
+    logger.debug('Calculation result:', result);
     
     setFormState(prevState => ({
       ...prevState,
@@ -220,7 +221,7 @@ const Calculator = () => {
   // 监听购买价格和分类变化，自动计算目标日耗
   useEffect(() => {
     if (formState.purchasePrice && formState.categoryId && !manualTargetEdit) {
-      console.log('useEffect triggered auto calculation:', { purchasePrice: formState.purchasePrice, categoryId: formState.categoryId });
+      logger.debug('useEffect triggered auto calculation:', { purchasePrice: formState.purchasePrice, categoryId: formState.categoryId });
       autoCalculateTarget(formState.purchasePrice, formState.categoryId);
     }
   }, [formState.purchasePrice, formState.categoryId, manualTargetEdit, autoCalculateTarget]);
@@ -346,7 +347,7 @@ const Calculator = () => {
     const { error } = await supabase.from('calculations').insert([recordToSave]);
 
     if (error) {
-      console.error('Error inserting data:', error);
+      logger.error('Error inserting data:', error);
       setNotification({ open: true, message: `保存数据时出错: ${error.message}`, severity: 'error' });
     } else {
       setNotification({ open: true, message: '计算结果保存成功！', severity: 'success' });
@@ -466,7 +467,7 @@ const Calculator = () => {
                     {suggestedCategories.map((suggestion, index) => {
                       // 安全检查：确保suggestion和suggestion.suggestedCategory存在
                       if (!suggestion || !suggestion.suggestedCategory) {
-                        console.warn('Invalid suggestion data:', suggestion);
+                        logger.warn('Invalid suggestion data:', suggestion);
                         return null;
                       }
                       

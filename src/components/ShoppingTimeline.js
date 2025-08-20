@@ -24,6 +24,7 @@ import {
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import logger from '../utils/logger';
 
 const ShoppingTimeline = () => {
   const { user } = useAuth();
@@ -112,7 +113,7 @@ const ShoppingTimeline = () => {
       });
 
     } catch (error) {
-      console.error('Error fetching timeline data:', error);
+      logger.error('Error fetching timeline data:', error);
       setError(error.message);
     } finally {
       setLoading(false);
